@@ -14,7 +14,8 @@ router.post('/addEmpDetail', hr.addEmpDetail);
 router.post('/addEmpDoc', hr.addEmpDoc);
 router.post('/addEmpDevice', hr.addEmpDevice);
 router.post('/addPrevEmplrDetail', hr.addPrevEmplrDetail);
-router.get('/getEmpDetail', hr.getEmpDetail);
+router.post('/getEmpDetail', hr.getEmpDetail);
+router.post('/listEmp', hr.listEmp);
 router.post('/register', auth.signUp);
 router.post('/login', auth.login);
 

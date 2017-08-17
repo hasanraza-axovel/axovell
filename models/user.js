@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
     },
 
     password: DataTypes.STRING,
-    remember_token: DataTypes.STRING
+    // remember_token: DataTypes.STRING
   }, {
     indexes: [
       {
@@ -25,6 +25,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         user.belongsTo(model.user_role,{ foreignKey: 'user_role_id', targetKey: 'id', as: 'userRole'});
+        user.hasMany(model.employee, { foriegnKey:'user_id', as: 'employee'});
       }
     }
   });
