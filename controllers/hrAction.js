@@ -11,18 +11,23 @@ var async = require('async');
 
 module.exports = {
   addEmpDetail: addEmpDetail,
-  addEmpDoc: addEmpDoc,
-  addEmpDevice: addEmpDevice,
-  addPrevEmplrDetail: addPrevEmplrDetail,
   getEmpDetail: getEmpDetail,
   listEmp: listEmp
 }
 
 
 function addEmpDetail(req, res, next) {
+  var docs = [];
+  var rows = [];
+  for(var i=0; i<req.body.doc.length; i++) {
+    if(typeof req.body.doc[i] != 'undefined') {
+      docs[i] = req.body.doc[i];
+      req.body.doc[i] = req.body.doc[i].substring(req.body.doc[i].indexOf(";base64,") + ";base64,".length+1);
+    }
+  }
 
   req.checkBody({
-    'firstName': {
+    'first_name': {
       notEmpty: true,
       isLength: {
         options: [{min: 3, max: 255}],
@@ -34,7 +39,7 @@ function addEmpDetail(req, res, next) {
       },
       errorMessage: 'First Name is required'
     },
-    'lastName': {
+    'last_name': {
       notEmpty: true,
       isLength: {
         options: [{ min: 3, max: 255 }],
@@ -54,7 +59,13 @@ function addEmpDetail(req, res, next) {
       errorMessage: 'Email is required'
     },
     'join_date': {notEmpty: true, errorMessage: 'join Date is required'},
-    'status' : {notEmpty: true, errorMessage: 'status is required'},
+    'status' : {
+      notEmpty: true,
+      errorMessage: 'status is required',
+      isBoolean: {
+        errorMessage: 'status value must be boolean type'
+      }
+    },
     'mob_no': {notEmpty: true, errorMessage: 'mobile no is require'},
     'service_cont_end': {notEmpty: true, errorMessage: 'service_cont_end is required'},
     'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
@@ -63,6 +74,15 @@ function addEmpDetail(req, res, next) {
     'password': {notEmpty: true, errorMessage: 'Password is required'},
     'emergency_cont_no': {notEmpty: true, errorMessage: 'Emergency contact number is required'},
     'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
+    'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
+    'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
+    'cur_pincode': {notEmpty: true, errorMessage: 'Current Pincode is required'},
+    'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
+    'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
+    'per_pincode': {notEmpty: true, errorMessage: 'Permanent Code is required'},
+    'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
+    'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
+    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
   });
 
   req.getValidationResult().then(function(result) {
@@ -77,6 +97,7 @@ function addEmpDetail(req, res, next) {
         });
     }
     else {
+
       bcrypt.hash(req.body.password, null, null, function(err, hash) {
         if(err) return next(err);
 
@@ -92,17 +113,16 @@ function addEmpDetail(req, res, next) {
             password: hash
           },{
             fields: ['user_role_id', 'username', 'email', 'password']
-          }).then(function(data) {
+          }).then(function(user) {
             db.employee_role.findOne({
               where: {
                 role: req.body.emp_role
               }
             }).then(function(employee_role) {
-              console.log(req.body.join_date);
 
               db.employee.create({
-                emp_fname: req.body.firstName,
-                emp_lname: req.body.lastName,
+                emp_fname: req.body.first_name,
+                emp_lname: req.body.last_name,
                 join_date: req.body.join_date,
                 status: req.body.status,
                 mob_no: req.body.mob_no,
@@ -112,21 +132,113 @@ function addEmpDetail(req, res, next) {
                 email: req.body.email,
                 password: hash,
                 emp_role_id: employee_role.id,
-                user_id: data.id
+                user_id: user.id
               },{
                 fields: ['emp_fname', 'emp_lname', 'join_date', 'status',
                        'mob_no', 'emergency_cont_no', 'emergency_cont_person',
                        'service_cont_end', 'email', 'password', 'emp_role_id',
                        'user_id']
-              }).then(function(data) {
-                return res.status(200)
-                  .json({
-                    status: 'success',
-                    data: {
-                      id: data.id
-                    },
-                    message: 'Data saved successfully'
+              }).then(function(employee) {
+                db.emp_device.create({
+                  emp_id: employee.id,
+                  laptop_no: req.body.laptop_no,
+                  mouse_no: req.body.mouse_no,
+                  keyboard_no: req.body.keyboard_no
+                },{
+                  fields: ['emp_id', 'laptop_no', 'mouse_no', 'keyboard_no']
+                }).then(function(empDevice) {
+                  db.emp_permnt_addr.create({
+                    emp_id: employee.id,
+                    address: req.body.per_address,
+                    city: req.body.per_city,
+                    pincode: req.body.per_pincode
+                  },{
+                    fields: ['emp_id', 'address', 'city', 'pincode']
+                  }).then(function(empPermntAddrs) {
+                    db.emp_current_addr.create({
+                      emp_id: employee.id,
+                      address: req.body.cur_address,
+                      city: req.body.cur_city,
+                      pincode: req.body.cur_pincode
+                    }).then(function(empCurrentAddrs) {
+                      db.prev_employer_detaile.create({
+                        emp_id: employee.id,
+                        company_name: req.body.company_name,
+                        leaving_date: req.body.leaving_date,
+                        CTC: req.body.ctc,
+                        HR_no: req.body.HR_no,
+                        TL_no: req.body.TL_no
+                      }).then(function(prevEmpDetaile) {
+                        for(var i=0; i<docs.length; i++) {
+                          rows.push({
+                            emp_id: employee.id,
+                            doc_name: req.body.doc_name[i],
+                            doc_path: req.body.doc[i]
+                          });
+                        }
+
+                        // console.log(req.body.doc[0]);
+                        db.document.bulkCreate(rows,{fields: ['emp_id', 'doc_name', 'doc_path']})
+                        .then(function(documents) {
+                          return res.status(200)
+                            .json({
+                              status: 'success',
+                              data: {
+                                id: employee.id
+                              },
+                              message: 'Data saved successfully'
+                            });
+                        }).catch(Sequelize.ValidationError, function(err) {
+                          res.status(422)
+                            .json({
+                              status: 'exception',
+                              data: err.errors,
+                              message: 'Validation Failed'
+                            });
+                        }).catch(function(err) {
+                          return next(err);
+                        });
+                      }).catch(Sequelize.ValidationError, function(err) {
+                        res.status(422)
+                          .json({
+                            status: 'exception',
+                            data: err.errors,
+                            message: 'Validation Failed'
+                          });
+                      }).catch(function(err) {
+                        return next(err);
+                      });
+
+                    }).catch(Sequelize.ValidationError, function(err) {
+                      res.status(422)
+                        .json({
+                          status: 'exception',
+                          data: err.errors,
+                          message: 'Validation Failed'
+                        });
+                    }).catch(function(err) {
+                      return next(err);
+                    });
+                  }).catch(Sequelize.ValidationError, function(err) {
+                    return res.status(422)
+                      .json({
+                        status: 'exception',
+                        data: err.errors,
+                        message: 'Validation Failed'
+                      });
+                  }).catch(function(err) {
+                    return next(err);
                   });
+                }).catch(Sequelize.ValidationError, function(err) {
+                  return res.status(422)
+                    .json({
+                      status: 'exception',
+                      data: err.errors,
+                      message: 'Validation Failed'
+                    });
+                }).catch(function(err) {
+                  return next(err);
+                });
               }).catch(Sequelize.ValidationError, function(err) {
                 return res.status(422)
                   .json({
@@ -158,114 +270,9 @@ function addEmpDetail(req, res, next) {
   });
 }
 
-function addEmpDoc() {
-
-}
-
-function addEmpDevice(req, res, next) {
-
-  req.checkBody({
-    'email': {
-      notEmpty: true,
-      isEmail: {
-        errorMessage: 'Invalid email'
-      },
-      errorMessage: 'employee id is required'
-    }
-  });
-
-  req.getValidationResult().then(function(result) {
-    if(!result.isEmpty()) {
-      return res.status(422)
-        .json({
-          status: 'exception',
-          data: result.array(),
-          message: 'Validation Failed'
-        });
-    }
-    else {
-      db.employee.findOne({
-        where: {
-          email: req.body.email
-        }
-      }).then(function(employee) {
-        if(employee) {
-          db.emp_device.create({
-            emp_id: employee.id,
-            laptop_no: req.body.laptop_no,
-            mouse_no: req.body.mouse_no,
-            keyboard_no: req.body.keyboard_no
-          },{
-            fields: ['emp_id', 'laptop_no', 'mouse_no', 'keyboard_no']
-          }).then(function(data) {
-            return res.status(200)
-              .json({
-                status: 'success',
-                data: {
-                  id: data.id
-                },
-                message: 'Data Saved successfully'
-              });
-          }).catch(Sequelize.ValidationError, function(err) {
-
-            return res.status(422)
-              .json({
-                status: 'exception',
-                data: err.errors,
-                message: 'Validation Failed'
-              });
-          }).catch(function(err) {
-            return next(err);
-          });
-        }
-        else {
-          return res.status(404)
-            .json({
-              status: 'exception',
-              message: 'This employee does not exist'
-            });
-        }
-      }).catch(function(err) {
-        return next(err);
-      });
-    }
-  });
-}
-
-function addPrevEmplrDetail() {
-
-}
-
 function getEmpDetail(req, res, next) {
-  // var qry = "SELECT * FROM employee WHERE ?";
-  // var one = 1;
-  // connection.query(qry, one, function(err, result) {
-  //   if(err) {
-  //     return res.status(404)
-  //       .json({
-  //         status: "exception",
-  //         message: "database error"
-  //       });
-  //   }
-  //
-  //   else {
-  //     if(result) {
-  //       return res.status(200)
-  //         .json({
-  //           status: 'success',
-  //           data: result,
-  //           message: 'Employee details found successfully'
-  //         });
-  //     }
-  //     else {
-  //       return res.status(404)
-  //         .json({
-  //           status: 'exception',
-  //           message: 'Employee details not found'
-  //         })
-  //     }
-  //   }
-  // });
+
+  
 }
 
 function listEmp(req, res, next) {

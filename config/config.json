@@ -4,6 +4,7 @@
     "password": "123456",
     "database": "Axovel",
     "host": "localhost",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "omitNull": true
   }
 }

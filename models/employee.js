@@ -29,6 +29,10 @@ module.exports = function(sequelize, DataTypes) {
         employee.belongsTo(models.user, { foriegnKey: 'user_id', targetKey: 'id', as: 'user'});
         employee.belongsTo(models.employee_role, { foreignKey: 'employee_role_id', targetKey: 'id', as: 'employeeRole'});
         employee.hasMany(models.emp_device, {foreignKey: 'emp_id', as: 'empDevice'});
+        employee.hasMany(models.emp_current_addr, {foreignKey: 'emp_id', as: 'empCurrentAddrs'});
+        employee.hasMany(models.emp_permnt_addr, {foreignKey: 'emp_id', as: 'empPermntAddrs'});
+        employee.hasMany(models.prev_employer_detaile, {foreignKey: 'emp_id', as: 'prevEmpDetaile'});
+        employee.hasMany(models.Document, {foreignKey: 'emp_id', as: 'Document'});
       }
     }
   });
