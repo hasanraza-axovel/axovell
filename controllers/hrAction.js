@@ -11,7 +11,9 @@ var async = require('async');
 
 module.exports = {
   addEmpDetail: addEmpDetail,
+  editEmpDetail: editEmpDetail,
   getEmpDetail: getEmpDetail,
+
   listEmp: listEmp
 }
 
@@ -58,7 +60,13 @@ function addEmpDetail(req, res, next) {
       },
       errorMessage: 'Email is required'
     },
-    'join_date': {notEmpty: true, errorMessage: 'join Date is required'},
+    'join_date': {
+      notEmpty: true,
+      isDate: {
+        errorMessage: 'Not a valid date'
+      },
+      errorMessage: 'join Date is required'
+    },
     'status' : {
       notEmpty: true,
       errorMessage: 'status is required',
@@ -66,23 +74,87 @@ function addEmpDetail(req, res, next) {
         errorMessage: 'status value must be boolean type'
       }
     },
-    'mob_no': {notEmpty: true, errorMessage: 'mobile no is require'},
-    'service_cont_end': {notEmpty: true, errorMessage: 'service_cont_end is required'},
+    'mob_no': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'Mobile no must contain only digit'
+      },
+      isLength: {
+        options: [{ min: 10, max: 10 }],
+        errorMessage: 'Mobile number must be 10 digit long'
+      },
+      errorMessage: 'mobile no is require'
+    },
+    'service_cont_end': {
+      notEmpty: true,
+      isDate: {
+        errorMessage: 'Not a valid date'
+      },
+      errorMessage: 'service_cont_end is required'
+    },
     'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
     // 'user_id': {notEmpty: true, errorMessage: 'user id is required'},
     'username': {notEmpty: true, errorMessage: 'Username is required'},
     'password': {notEmpty: true, errorMessage: 'Password is required'},
-    'emergency_cont_no': {notEmpty: true, errorMessage: 'Emergency contact number is required'},
+    'emergency_cont_no': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'emergency contact number must contain only digit'
+      },
+      errorMessage: 'Emergency contact number is required'
+    },
     'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
     'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
     'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
-    'cur_pincode': {notEmpty: true, errorMessage: 'Current Pincode is required'},
+    'cur_pincode': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'Pincode must contain only digit'
+      },
+      isLength: {
+        options: [{ min: 6, max: 6 }],
+        errorMessage: 'Pincode must be 6 digit long'
+      },
+      errorMessage: 'Current Pincode is required'
+    },
     'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
     'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
-    'per_pincode': {notEmpty: true, errorMessage: 'Permanent Code is required'},
+    'per_pincode': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'Pincode must contain only digit'
+      },
+      isLength: {
+        options: [{ min: 6, max: 6 }],
+        errorMessage: 'Pincode must be 6 digit long'
+      },
+      errorMessage: 'Permanent Code is required'
+    },
     'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
     'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
-    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
+    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'},
+    'leaving_date': {
+      isDate: {
+        errorMessage: 'Not a valid date'
+      }
+    },
+    'ctc': {notEmpty: true, errorMessage: 'CTC is required'},
+    'HR_no': {
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'HR no must contain only digit'
+      }
+    },
+    'TL_no': {
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'TL no must contain only digit'
+      }
+    }
   });
 
   req.getValidationResult().then(function(result) {
@@ -270,9 +342,310 @@ function addEmpDetail(req, res, next) {
   });
 }
 
+function editEmpDetail(req, res, next) {
+  req.checkBody({
+    'first_name': {
+      notEmpty: true,
+      isLength: {
+        options: [{min: 3, max: 255}],
+        errorMessage: 'First Namee must be between 3 and 255 characters long'
+      },
+      matches: {
+        options: [/^[a-zA-Z\s]*$/i],
+        errorMessage: 'First Name should only contain letters'
+      },
+      errorMessage: 'First Name is required'
+    },
+    'last_name': {
+      notEmpty: true,
+      isLength: {
+        options: [{ min: 3, max: 255 }],
+        errorMessage: 'Last Name must be between 3 and 255 characters long'
+      },
+      matches: {
+        options: [/^[a-zA-Z\s]*$/i],
+        errorMessage: 'Last Name should only contain letters'
+      },
+      errorMessage: 'Last Name is required'
+    },
+    'email': {
+      notEmpty: true,
+      isEmail: {
+        errorMessage: 'Invalid Email'
+      },
+      errorMessage: 'Email is required'
+    },
+    'join_date': {
+      notEmpty: true,
+      isDate: {
+        errorMessage: 'Not a valid date'
+      },
+      errorMessage: 'join Date is required'
+    },
+    'status' : {
+      notEmpty: true,
+      errorMessage: 'status is required',
+      isBoolean: {
+        errorMessage: 'status value must be boolean type'
+      }
+    },
+    'mob_no': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'Mobile no must contain only digit'
+      },
+      isLength: {
+        options: [{ min: 10, max: 10 }],
+        errorMessage: 'Mobile number must be 10 digit long'
+      },
+      errorMessage: 'mobile no is require'
+    },
+    'service_cont_end': {
+      notEmpty: true,
+      isDate: {
+        errorMessage: 'Not a valid date'
+      },
+      errorMessage: 'service_cont_end is required'
+    },
+    'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
+    // 'user_id': {notEmpty: true, errorMessage: 'user id is required'},
+    'username': {notEmpty: true, errorMessage: 'Username is required'},
+    'password': {notEmpty: true, errorMessage: 'Password is required'},
+    'emergency_cont_no': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'emergency contact number must contain only digit'
+      },
+      errorMessage: 'Emergency contact number is required'
+    },
+    'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
+    'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
+    'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
+    'cur_pincode': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'Pincode must contain only digit'
+      },
+      isLength: {
+        options: [{ min: 6, max: 6 }],
+        errorMessage: 'Pincode must be 6 digit long'
+      },
+      errorMessage: 'Current Pincode is required'
+    },
+    'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
+    'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
+    'per_pincode': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'Pincode must contain only digit'
+      },
+      isLength: {
+        options: [{ min: 6, max: 6 }],
+        errorMessage: 'Pincode must be 6 digit long'
+      },
+      errorMessage: 'Permanent Code is required'
+    },
+    'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
+    'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
+    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'},
+    'doc': {
+      notEmpty: true,
+      // isBase64: {
+      //   errorMessage: 'Not a valid document'
+      // },
+      errorMessage: 'Document is required'
+    },
+    'doc_name': {notEmpty: true, errorMessage: 'Document name is required'},
+    'company_name': {notEmpty: true, errorMessage: 'Company name is required'},
+    'leaving_date': {
+      notEmpty: true,
+      isDate: {
+        errorMessage: 'Not a valid date'
+      },
+      errorMessage: 'Leaving Date is required'
+    },
+    'ctc': {notEmpty: true, errorMessage: 'CTC is required'},
+    'HR_no': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'HR no must contain only digit'
+      },
+      errorMessage: 'HR no. is required'
+    },
+    'TL_no': {
+      notEmpty: true,
+      matches: {
+        options: [/^[0-9]*$/i],
+        errorMessage: 'TL no must contain only digit'
+      },
+      errorMessage: 'TL no is required'
+    }
+  });
+
+  req.getValidationResult().then(function(result) {
+
+    if(!result.isEmpty()) {
+
+      return res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    }
+    else {
+      bcrypt.hash(req.body.password, null, null, function(err, hash) {
+        if(err) return next(err);
+
+        db.user.findOne({
+          where: {
+            id: req.body.user_id
+          }
+        }).then(function(user) {
+          if(user) {
+            db.user.update({
+              username: req.body.username,
+              email: req.body.email,
+              password: hash
+            },{
+              where: {id: req.body.user_id},
+            }).then(function(user) {
+              db.employee.findOne({
+                where: {
+                  user_id: req.body.user_id
+                }
+              }).then(function(employee) {
+                db.employee_role.findOne({
+                  where: {
+                    role: req.body.emp_role
+                  }
+                }).then(function(employeeRole){
+                  db.employee.update({
+                    emp_fname: req.body.first_name,
+                    emp_lname: req.body.last_name,
+                    join_date: req.body.join_date,
+                    status: req.body.status,
+                    mob_no: req.body.mob_no,
+                    emergency_cont_no: req.body.emergency_cont_no,
+                    emergency_cont_person: req.body.emergency_cont_person,
+                    service_cont_end: req.body.service_cont_end,
+                    email: req.body.email,
+                    password: hash,
+                    emp_role_id: employeeRole.id
+                  },{
+                    where: {
+                      id: employee.id
+                    }
+                  }).then(function(data) {
+                    db.emp_device.update({
+                      laptop_no: req.body.laptop_no,
+                      mouse_no: req.body.mouse_no,
+                      keyboard_no: req.body.keyboard_no
+                    }, {
+                      where: {
+                        emp_id: employee.id
+                      }
+                    }).then(function(empDevice){
+                      db.emp_current_addr.update({
+                        address: req.body.per_address,
+                        city: req.body.per_city,
+                        pincode: req.body.per_pincode
+                      },{
+                        where: {
+                          emp_id: employee.id
+                        }
+                      }).then(function(empCurrentAddrs) {
+                        db.emp_permnt_addr.update({
+                          address: req.body.per_address,
+                          city: req.body.per_city,
+                          pincode: req.body.per_pincode
+                        }, {
+                          where: {
+                            emp_id: employee.id
+                          }
+                        }).then(function(empPermntAddrs) {
+                          
+                        }).catch(Sequelize.ValidationError, function(err) {
+                          return res.status(422)
+                            .json({
+                              status: 'exception',
+                              data: err.errors,
+                              message: 'Validation Failed'
+                            });
+                        }).catch(function(err) {
+                          return next(err)
+                        });
+                      }).catch(Sequelize.ValidationError, function(err) {
+                        return res.status(422)
+                          .json({
+                            status: 'exception',
+                            data: err.errors,
+                            message: 'Validation Failed'
+                          });
+                      }).catch(function(err) {
+                        return next(err)
+                      });
+                    }).catch(Sequelize.ValidationError, function(err) {
+                      return res.status(422)
+                        .json({
+                          status: 'exception',
+                          data: err.errors,
+                          message: 'Validation Failed'
+                        });
+                    }).catch(function(err) {
+                      return next(err)
+                    });
+                  }).catch(Sequelize.ValidationError, function(err) {
+                    return res.status(422)
+                      .json({
+                        status: 'exception',
+                        data: err.errors,
+                        message: 'Validation Failed'
+                      });
+                  }).catch(function(err) {
+                    return next(err)
+                  });
+                }).catch(function(err) {
+                  return next(err);
+                })
+              }).catch(function(err) {
+                return next(err);
+              })
+            }).catch(Sequelize.ValidationError, function(err){
+              return res.status(422)
+                .json({
+                  status: 'exception',
+                  data: err.errors,
+                  message: 'Validation Failed'
+                });
+            }).catch(function(err) {
+              return next(err);
+            });
+          }
+          else{
+            return res.status(404)
+              .json({
+                status: 'exception',
+                message: 'employee does not found'
+              });
+          }
+        }).catch(function(err) {
+          return next(err);
+        });
+      });
+    }
+  });
+
+}
+
 function getEmpDetail(req, res, next) {
 
-  
+
 }
 
 function listEmp(req, res, next) {

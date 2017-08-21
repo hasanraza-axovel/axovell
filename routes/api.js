@@ -11,6 +11,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/addEmpDetail', hr.addEmpDetail);
+router.post('/editEmpDetail', hr.editEmpDetail);
 router.post('/getEmpDetail', hr.getEmpDetail);
 router.post('/listEmp', hr.listEmp);
 router.post('/register', auth.signUp);
