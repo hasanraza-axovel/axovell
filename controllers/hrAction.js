@@ -580,16 +580,32 @@ function editEmpDetail(req, res, next) {
                               emp_id: employee.id
                             }
                           }).then(function(prevEmpDetaile) {
+                            var promises = [];
                             for(var i=0; i<req.body.doc.length; i++) {
-                              db.document.update({
-                                doc: req.body.doc[i]
+                              var newPromise = db.document.update({
+                                doc_path: req.body.doc[i]
                               },{
                                 where: {
                                   doc_name: req.body.doc_name[i],
                                   emp_id: employee.id
                                 }
-                              })
-                            }
+                              });
+                              promises.push(newPromise);
+                            };
+                            return Promise.all(promises).then(function(documents) {
+                              var docPromises = [];
+                              for(var i=0; i<documents.length; i++) {
+                                docPromises.push(documents[i].dataValues);
+                              }
+                            }).then(function(result) {
+                              return res.status(200)
+                                .json({
+                                  status: 'success',
+                                  message: 'employee updated'
+                                });
+                            }).catch(function(err) {
+                              return next(err);
+                            });
                           }).catch(Sequelize.ValidationError, function(err) {
                             return res.status(422)
                               .json({
