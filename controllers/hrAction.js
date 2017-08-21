@@ -569,7 +569,37 @@ function editEmpDetail(req, res, next) {
                             emp_id: employee.id
                           }
                         }).then(function(empPermntAddrs) {
-                          
+                          db.prev_employer_detaile.update({
+                            company_name: req.body.company_name,
+                            leaving_date: req.body.leaving_date,
+                            CTC: req.body.ctc,
+                            HR_no: req.body.HR_no,
+                            TL_no: req.body.TL_no
+                          },{
+                            where: {
+                              emp_id: employee.id
+                            }
+                          }).then(function(prevEmpDetaile) {
+                            for(var i=0; i<req.body.doc.length; i++) {
+                              db.document.update({
+                                doc: req.body.doc[i]
+                              },{
+                                where: {
+                                  doc_name: req.body.doc_name[i],
+                                  emp_id: employee.id
+                                }
+                              })
+                            }
+                          }).catch(Sequelize.ValidationError, function(err) {
+                            return res.status(422)
+                              .json({
+                                status: 'exception',
+                                data: err.errors,
+                                message: 'Validation Failed'
+                              });
+                          }).catch(function(err) {
+                            return next(err)
+                          });
                         }).catch(Sequelize.ValidationError, function(err) {
                           return res.status(422)
                             .json({
