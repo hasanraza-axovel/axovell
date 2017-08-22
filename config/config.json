@@ -3,7 +3,7 @@
     "username": "root",
     "password": "12345",
     "database": "axovel_portal",
-    "host": "192.241.153.62",
+    "host": "localhost",
     "dialect": "mysql",
     "omitNull": true
   }
