@@ -3,7 +3,6 @@ module.exports = function(sequelize, DataTypes) {
   var document = sequelize.define('document', {
     doc_name: DataTypes.STRING,
     doc_path: DataTypes.TEXT,
-    title: DataTypes.STRING,
     emp_id: DataTypes.INTEGER
   },{
     classMethods: {
