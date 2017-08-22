@@ -256,7 +256,6 @@ function addEmpDetail(req, res, next) {
                             .json({
                               status: 'success',
                               data: {
-                                id: employee.id
                               },
                               message: 'Data saved successfully'
                             });
@@ -690,8 +689,127 @@ function editEmpDetail(req, res, next) {
 }
 
 function getEmpDetail(req, res, next) {
+  req.checkBody('emp_user_id', "employee's user Id is required").notEmpty();
+  req.getValidationResult().then(function(result) {
 
-
+    if(!result.isEmpty()) {
+      return res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    }
+    else {
+      db.user.findOne({
+        where: {
+          id: req.body.emp_user_id
+        }
+      }).then(function(user) {
+        if(user){
+          db.employee.findOne({
+            where: {
+              user_id: user.id
+            }
+          }).then(function(employee) {
+            db.employee_role.findOne({
+              where: {
+                id: employee.emp_role_id
+              }
+            }).then(function(employeeRole) {
+              db.emp_current_addr.findOne({
+                where: {
+                  emp_id: employee.id
+                }
+              }).then(function(empCurrentAddrs) {
+                db.emp_permnt_addr.findOne({
+                  where: {
+                    emp_id: employee.id
+                  }
+                }).then(function(empPermntAddrs) {
+                  db.prev_employer_detaile.findOne({
+                    where: {
+                      emp_id: employee.id
+                    }
+                  }).then(function(prevEmpDetaile) {
+                    db.emp_device.findOne({
+                      where: {
+                        emp_id: employee.id
+                      }
+                    }).then(function(empDevice) {
+                      db.document.findAll({
+                        where: {
+                          emp_id: employee.id
+                        }
+                      }).then(function(document) {
+                        res.status(200)
+                          .json({
+                            status: 'success',
+                            data: {
+                              emp_fname: employee.emp_fname,
+                              emp_lname: employee.emp_lname,
+                              join_date: employee.join_date,
+                              status: employee.status,
+                              mob_no: employee.mob_no,
+                              emergency_cont_no: employee.emergency_cont_no,
+                              emergency_cont_person: employee.emergency_cont_person,
+                              service_cont_end: employee.service_cont_end,
+                              email: employee.email,
+                              username: user.username,
+                              employee_role: employeeRole.role,
+                              laptop_no: empDevice.laptop_no,
+                              mouse_no: empDevice.mouse_no,
+                              keyboard_no: empDevice.keyboard_no,
+                              per_address: empPermntAddrs.address,
+                              per_city: empPermntAddrs.city,
+                              per_pincode: empPermntAddrs.pincode,
+                              cur_address: empCurrentAddrs.address,
+                              cur_city: empCurrentAddrs.city,
+                              cur_pincode: empCurrentAddrs.pincode,
+                              company_name: prevEmpDetaile.company_name,
+                              leaving_date: prevEmpDetaile.leaving_date,
+                              CTC: prevEmpDetaile.ctc,
+                              HR_no: prevEmpDetaile.HR_no,
+                              TL_no: prevEmpDetaile.TL_no,
+                              doc: req.body.doc_path,
+                              doc_name: req.body.doc_name
+                            },
+                            message: "Employee's data found"
+                          });
+                      }).catch(function(err) {
+                        return next(err);
+                      });
+                    }).catch(function(err) {
+                      return next(err);
+                    });
+                  }).catch(function(err) {
+                    return next(err);
+                  });
+                }).catch(function(err) {
+                  return next(err);
+                });
+              }).catch(function(err) {
+                return next(err);
+              });
+            }).catch(function(err) {
+              return next(err);
+            });
+          }).catch(function(err) {
+            return next(err);
+          });
+        }
+        else {
+          res.status(404)
+            .json({
+              status: 'exception',
+              message: 'employee not found'
+            });
+        }
+      }).catch(function(err){
+        return next(err);
+      });
+    }
+  });
 }
 
 function listEmp(req, res, next) {
