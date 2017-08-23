@@ -19,6 +19,9 @@ module.exports = {
 
 
 function addEmpDetail(req, res, next) {
+  console.log(req.body);
+  console.log(req.body.doc);
+  console.log(req.body.doc_name);
   var docs = [];
   var rows = [];
   for(var i=0; i<req.body.doc.length; i++) {
@@ -233,6 +236,7 @@ function addEmpDetail(req, res, next) {
                         HR_no: req.body.HR_no,
                         TL_no: req.body.TL_no
                       }).then(function(prevEmpDetaile) {
+
                         for(var i=0; i<docs.length; i++) {
                           rows.push({
                             emp_id: employee.id,
@@ -248,6 +252,7 @@ function addEmpDetail(req, res, next) {
                             .json({
                               status: 'success',
                               data: {
+                                id: user.id
                               },
                               message: 'Data saved successfully'
                             });
