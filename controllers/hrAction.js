@@ -136,25 +136,18 @@ function addEmpDetail(req, res, next) {
     },
     'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
     'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
-    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'},
-    'leaving_date': {
-      isDate: {
-        errorMessage: 'Not a valid date'
-      }
-    },
-    'HR_no': {
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'HR no must contain only digit'
-      }
-    },
-    'TL_no': {
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'TL no must contain only digit'
-      }
-    }
+    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
   });
+
+  if(req.body.leaving_date) {
+    req.checkBody('leaving_date', 'Not a valid date').isDate();
+  }
+  if(req.body.HR_no) {
+    req.checkBody('HR_no', 'HR no must contain only digit').matches(/^[0-9]*$/, "i");
+  }
+  if(req.body.TL_no) {
+    req.checkBody('TL_no', 'TL no must contain only digit').matches(/^[0-9]*$/, "i");
+  }
 
   req.getValidationResult().then(function(result) {
 
