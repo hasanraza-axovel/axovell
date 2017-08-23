@@ -247,6 +247,7 @@ function login(req, res, next) {
   req.checkBody('loginId', 'LoginId is required').notEmpty();
 
   req.getValidationResult().then(function(result) {
+    console.log(req.body.password);
 
     if (!result.isEmpty()) {
       // return error if there is validation error
@@ -274,7 +275,7 @@ function login(req, res, next) {
             },
             attributes: ['role']
           }).then(function(roleData) {
-            var role = roleData;
+            var role = roleData.role;
             var userId = user.id;
             var username = user.username;
 
@@ -315,7 +316,8 @@ function login(req, res, next) {
                                 role: role,
                                 username: username,
                                 token: token
-                              }
+                              },
+                              message: 'User successfully login'
                             });
                         }).catch(function(err) {
                           return next(err);
@@ -336,7 +338,8 @@ function login(req, res, next) {
                                 role: role,
                                 username: username,
                                 token: token
-                              }
+                              },
+                              message: 'User successfully login'
                             });
                         }).catch(function(err) {
                           return next(err);
