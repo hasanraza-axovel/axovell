@@ -142,7 +142,6 @@ function addEmpDetail(req, res, next) {
         errorMessage: 'Not a valid date'
       }
     },
-    'ctc': {notEmpty: true, errorMessage: 'CTC is required'},
     'HR_no': {
       matches: {
         options: [/^[0-9]*$/i],
@@ -771,8 +770,7 @@ function getEmpDetail(req, res, next) {
                               CTC: prevEmpDetaile.ctc,
                               HR_no: prevEmpDetaile.HR_no,
                               TL_no: prevEmpDetaile.TL_no,
-                              doc: req.body.doc_path,
-                              doc_name: req.body.doc_name
+                              doc: document
                             },
                             message: "Employee's data found"
                           });
@@ -813,7 +811,7 @@ function getEmpDetail(req, res, next) {
 }
 
 function listEmp(req, res, next) {
-  req.checkBody('userId', 'userId is required').notEmpty();
+  req.checkBody('user_id', 'userId is required').notEmpty();
   req.getValidationResult().then(function(result) {
 
     if(!result.isEmpty()) {
@@ -833,14 +831,15 @@ function listEmp(req, res, next) {
         },
         attribures: ['id','role']
       }).then(function(data) {
-        var roleIds = [1,2];
-        // data.forEach(function(value, key) {
-        //   roleIds[keys] = value.id;
-        // });
-        console.log(req.body.userId);
+        var roleIds = [];
+        console.log(data[0].id);
+        for(var i=0; i<data.length; i++) {
+          roleIds[i] = data[i].id;
+        }
+        console.log(roleIds);
         db.user.findOne({
           where: {
-            id: req.body.userId
+            id: req.body.user_id
           }
         }).then(function(user) {
           if(user && !roleIds.includes(user.user_role_id)) {
@@ -853,18 +852,18 @@ function listEmp(req, res, next) {
             else if(user) {
               db.employee.findAll({
                 // include: [
-                //   {model: db.employee_role, as: 'employeeRole', attributes: ['role']}
+                //   { model: db.employee_role}
                 // ],
                 order: [
                   ['createdAt', 'DESC']
               ],
-              attributes: ['id', 'emp_name', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email']
+              attributes: ['id','emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email']
             }).then(function(data) {
               return res.status(200)
                 .json({
                   status: 'success',
                   data: data,
-                  message: data.length + 'users found'
+                  message: data.length + ' employees found'
                 });
             }).catch(function(err) {
               return next(err);
