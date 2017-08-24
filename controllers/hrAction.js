@@ -19,243 +19,269 @@ module.exports = {
 
 
 function addEmpDetail(req, res, next) {
-  console.log(req.body);
-  console.log(req.body.doc);
-  console.log(req.body.doc_name);
-  var docs = [];
+  var docs = req.body.doc;
+  var doc_names = req.body.doc_name;
   var rows = [];
-  for(var i=0; i<req.body.doc.length; i++) {
-    if(typeof req.body.doc[i] != 'undefined') {
-      docs[i] = req.body.doc[i];
-      req.body.doc[i] = req.body.doc[i].substring(req.body.doc[i].indexOf(";base64,") + ";base64,".length+1);
-    }
-  }
-
-  req.checkBody({
-    'first_name': {
-      notEmpty: true,
-      isLength: {
-        options: [{min: 3, max: 255}],
-        errorMessage: 'First Namee must be between 3 and 255 characters long'
-      },
-      matches: {
-        options: [/^[a-zA-Z\s]*$/i],
-        errorMessage: 'First Name should only contain letters'
-      },
-      errorMessage: 'First Name is required'
-    },
-    'last_name': {
-      notEmpty: true,
-      isLength: {
-        options: [{ min: 3, max: 255 }],
-        errorMessage: 'Last Name must be between 3 and 255 characters long'
-      },
-      matches: {
-        options: [/^[a-zA-Z\s]*$/i],
-        errorMessage: 'Last Name should only contain letters'
-      },
-      errorMessage: 'Last Name is required'
-    },
-    'email': {
-      notEmpty: true,
-      isEmail: {
-        errorMessage: 'Invalid Email'
-      },
-      errorMessage: 'Email is required'
-    },
-    'join_date': {
-      notEmpty: true,
-      isDate: {
-        errorMessage: 'Not a valid date'
-      },
-      errorMessage: 'join Date is required'
-    },
-    'status' : {
-      notEmpty: true,
-      errorMessage: 'status is required',
-      isBoolean: {
-        errorMessage: 'status value must be boolean type'
+  checkDoc = false;
+  if((docs.constructor !== Array && doc_names.constructor === Array)||
+      (docs.constructor === Array && doc_names.constructor !== Array)) {
+        checkDoc = true;
+        console.log("not no. valid");
       }
-    },
-    'mob_no': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'Mobile no must contain only digit'
-      },
-      isLength: {
-        options: [{ min: 10, max: 10 }],
-        errorMessage: 'Mobile number must be 10 digit long'
-      },
-      errorMessage: 'mobile no is require'
-    },
-    'service_cont_end': {
-      notEmpty: true,
-      isDate: {
-        errorMessage: 'Not a valid date'
-      },
-      errorMessage: 'service_cont_end is required'
-    },
-    'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
-    // 'user_id': {notEmpty: true, errorMessage: 'user id is required'},
-    'username': {notEmpty: true, errorMessage: 'Username is required'},
-    'password': {notEmpty: true, errorMessage: 'Password is required'},
-    'emergency_cont_no': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'emergency contact number must contain only digit'
-      },
-      errorMessage: 'Emergency contact number is required'
-    },
-    'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
-    'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
-    'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
-    'cur_pincode': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'Pincode must contain only digit'
-      },
-      isLength: {
-        options: [{ min: 6, max: 6 }],
-        errorMessage: 'Pincode must be 6 digit long'
-      },
-      errorMessage: 'Current Pincode is required'
-    },
-    'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
-    'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
-    'per_pincode': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'Pincode must contain only digit'
-      },
-      isLength: {
-        options: [{ min: 6, max: 6 }],
-        errorMessage: 'Pincode must be 6 digit long'
-      },
-      errorMessage: 'Permanent Code is required'
-    },
-    'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
-    'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
-    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
-  });
-
-  if(req.body.leaving_date) {
-    req.checkBody('leaving_date', 'Not a valid date').isDate();
-  }
-  if(req.body.HR_no) {
-    req.checkBody('HR_no', 'HR no must contain only digit').matches(/^[0-9]*$/, "i");
-  }
-  if(req.body.TL_no) {
-    req.checkBody('TL_no', 'TL no must contain only digit').matches(/^[0-9]*$/, "i");
+  if(checkDoc) {
+    res.status(422)
+      .json({
+        status: 'exception',
+        message: 'Document is not valid OR no of document is not equal to no of doc name'
+      });
   }
 
-  req.getValidationResult().then(function(result) {
+else{
+    req.checkBody({
+      'first_name': {
+        notEmpty: true,
+        isLength: {
+          options: [{min: 3, max: 255}],
+          errorMessage: 'First Namee must be between 3 and 255 characters long'
+        },
+        matches: {
+          options: [/^[a-zA-Z\s]*$/i],
+          errorMessage: 'First Name should only contain letters'
+        },
+        errorMessage: 'First Name is required'
+      },
+      'last_name': {
+        notEmpty: true,
+        isLength: {
+          options: [{ min: 3, max: 255 }],
+          errorMessage: 'Last Name must be between 3 and 255 characters long'
+        },
+        matches: {
+          options: [/^[a-zA-Z\s]*$/i],
+          errorMessage: 'Last Name should only contain letters'
+        },
+        errorMessage: 'Last Name is required'
+      },
+      'email': {
+        notEmpty: true,
+        isEmail: {
+          errorMessage: 'Invalid Email'
+        },
+        errorMessage: 'Email is required'
+      },
+      'join_date': {
+        notEmpty: true,
+        isDate: {
+          errorMessage: 'Not a valid date'
+        },
+        errorMessage: 'join Date is required'
+      },
+      'status' : {
+        notEmpty: true,
+        errorMessage: 'status is required',
+        isBoolean: {
+          errorMessage: 'status value must be boolean type'
+        }
+      },
+      'mob_no': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'Mobile no must contain only digit'
+        },
+        isLength: {
+          options: [{ min: 10, max: 10 }],
+          errorMessage: 'Mobile number must be 10 digit long'
+        },
+        errorMessage: 'mobile no is require'
+      },
+      'service_cont_end': {
+        notEmpty: true,
+        isDate: {
+          errorMessage: 'Not a valid date'
+        },
+        errorMessage: 'service_cont_end is required'
+      },
+      'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
+      // 'user_id': {notEmpty: true, errorMessage: 'user id is required'},
+      'username': {notEmpty: true, errorMessage: 'Username is required'},
+      'password': {notEmpty: true, errorMessage: 'Password is required'},
+      'emergency_cont_no': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'emergency contact number must contain only digit'
+        },
+        errorMessage: 'Emergency contact number is required'
+      },
+      'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
+      'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
+      'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
+      'cur_pincode': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'Pincode must contain only digit'
+        },
+        isLength: {
+          options: [{ min: 6, max: 6 }],
+          errorMessage: 'Pincode must be 6 digit long'
+        },
+        errorMessage: 'Current Pincode is required'
+      },
+      'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
+      'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
+      'per_pincode': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'Pincode must contain only digit'
+        },
+        isLength: {
+          options: [{ min: 6, max: 6 }],
+          errorMessage: 'Pincode must be 6 digit long'
+        },
+        errorMessage: 'Permanent Code is required'
+      },
+      'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
+      'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
+      'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
+    });
 
-    if(!result.isEmpty()) {
-
-      return res.status(422)
-        .json({
-          status: 'exception',
-          data: result.array(),
-          message: 'Validation Failed'
-        });
+    if(req.body.leaving_date) {
+      req.checkBody('leaving_date', 'Not a valid date').isDate();
     }
-    else {
+    if(req.body.HR_no) {
+      req.checkBody('HR_no', 'HR no must contain only digit').matches(/^[0-9]*$/, "i");
+    }
+    if(req.body.TL_no) {
+      req.checkBody('TL_no', 'TL no must contain only digit').matches(/^[0-9]*$/, "i");
+    }
 
-      bcrypt.hash(req.body.password, null, null, function(err, hash) {
-        if(err) return next(err);
+    req.getValidationResult().then(function(result) {
 
-        db.user_role.findOne({
-          where: {
-            role: 'employee'
-          }
-        }).then(function(userRole) {
-          db.user.create({
-            user_role_id: userRole.id,
-            username: req.body.username,
-            email: req.body.email,
-            password: hash
-          },{
-            fields: ['user_role_id', 'username', 'email', 'password']
-          }).then(function(user) {
-            db.employee_role.findOne({
-              where: {
-                role: req.body.emp_role
-              }
-            }).then(function(employee_role) {
+      if(!result.isEmpty()) {
 
-              db.employee.create({
-                emp_fname: req.body.first_name,
-                emp_lname: req.body.last_name,
-                join_date: req.body.join_date,
-                status: req.body.status,
-                mob_no: req.body.mob_no,
-                emergency_cont_no: req.body.emergency_cont_no,
-                emergency_cont_person: req.body.emergency_cont_person,
-                service_cont_end: req.body.service_cont_end,
-                email: req.body.email,
-                password: hash,
-                emp_role_id: employee_role.id,
-                user_id: user.id
-              },{
-                fields: ['emp_fname', 'emp_lname', 'join_date', 'status',
-                       'mob_no', 'emergency_cont_no', 'emergency_cont_person',
-                       'service_cont_end', 'email', 'password', 'emp_role_id',
-                       'user_id']
-              }).then(function(employee) {
-                db.emp_device.create({
-                  emp_id: employee.id,
-                  laptop_no: req.body.laptop_no,
-                  mouse_no: req.body.mouse_no,
-                  keyboard_no: req.body.keyboard_no
+        return res.status(422)
+          .json({
+            status: 'exception',
+            data: result.array(),
+            message: 'Validation Failed'
+          });
+      }
+      else {
+
+        bcrypt.hash(req.body.password, null, null, function(err, hash) {
+          if(err) return next(err);
+
+          db.user_role.findOne({
+            where: {
+              role: 'employee'
+            }
+          }).then(function(userRole) {
+            db.user.create({
+              user_role_id: userRole.id,
+              username: req.body.username,
+              email: req.body.email,
+              password: hash
+            },{
+              fields: ['user_role_id', 'username', 'email', 'password']
+            }).then(function(user) {
+              db.employee_role.findOne({
+                where: {
+                  role: req.body.emp_role
+                }
+              }).then(function(employee_role) {
+
+                db.employee.create({
+                  emp_fname: req.body.first_name,
+                  emp_lname: req.body.last_name,
+                  join_date: req.body.join_date,
+                  status: req.body.status,
+                  mob_no: req.body.mob_no,
+                  emergency_cont_no: req.body.emergency_cont_no,
+                  emergency_cont_person: req.body.emergency_cont_person,
+                  service_cont_end: req.body.service_cont_end,
+                  email: req.body.email,
+                  password: hash,
+                  emp_role_id: employee_role.id,
+                  user_id: user.id
                 },{
-                  fields: ['emp_id', 'laptop_no', 'mouse_no', 'keyboard_no']
-                }).then(function(empDevice) {
-                  db.emp_permnt_addr.create({
+                  fields: ['emp_fname', 'emp_lname', 'join_date', 'status',
+                         'mob_no', 'emergency_cont_no', 'emergency_cont_person',
+                         'service_cont_end', 'email', 'password', 'emp_role_id',
+                         'user_id']
+                }).then(function(employee) {
+                  db.emp_device.create({
                     emp_id: employee.id,
-                    address: req.body.per_address,
-                    city: req.body.per_city,
-                    pincode: req.body.per_pincode
+                    laptop_no: req.body.laptop_no,
+                    mouse_no: req.body.mouse_no,
+                    keyboard_no: req.body.keyboard_no
                   },{
-                    fields: ['emp_id', 'address', 'city', 'pincode']
-                  }).then(function(empPermntAddrs) {
-                    db.emp_current_addr.create({
+                    fields: ['emp_id', 'laptop_no', 'mouse_no', 'keyboard_no']
+                  }).then(function(empDevice) {
+                    db.emp_permnt_addr.create({
                       emp_id: employee.id,
-                      address: req.body.cur_address,
-                      city: req.body.cur_city,
-                      pincode: req.body.cur_pincode
-                    }).then(function(empCurrentAddrs) {
-                      db.prev_employer_detaile.create({
+                      address: req.body.per_address,
+                      city: req.body.per_city,
+                      pincode: req.body.per_pincode
+                    },{
+                      fields: ['emp_id', 'address', 'city', 'pincode']
+                    }).then(function(empPermntAddrs) {
+                      db.emp_current_addr.create({
                         emp_id: employee.id,
-                        company_name: req.body.company_name,
-                        leaving_date: req.body.leaving_date,
-                        CTC: req.body.ctc,
-                        HR_no: req.body.HR_no,
-                        TL_no: req.body.TL_no
-                      }).then(function(prevEmpDetaile) {
+                        address: req.body.cur_address,
+                        city: req.body.cur_city,
+                        pincode: req.body.cur_pincode
+                      }).then(function(empCurrentAddrs) {
+                        db.prev_employer_detaile.create({
+                          emp_id: employee.id,
+                          company_name: req.body.company_name,
+                          leaving_date: req.body.leaving_date,
+                          CTC: req.body.ctc,
+                          HR_no: req.body.HR_no,
+                          TL_no: req.body.TL_no
+                        }).then(function(prevEmpDetaile) {
 
-                        for(var i=0; i<docs.length; i++) {
-                          rows.push({
-                            emp_id: employee.id,
-                            doc_name: req.body.doc_name[i],
-                            doc_path: req.body.doc[i]
-                          });
-                        }
+                          if(docs.constructor === Array) {
 
-                        // console.log(req.body.doc[0]);
-                        db.document.bulkCreate(rows,{fields: ['emp_id', 'doc_name', 'doc_path']})
-                        .then(function(documents) {
-                          return res.status(200)
-                            .json({
-                              status: 'success',
-                              data: {
-                                id: user.id
-                              },
-                              message: 'Data saved successfully'
+                            for(var i=0; i<docs.length; i++) {
+                              rows.push({
+                                emp_id: employee.id,
+                                doc_name: req.body.doc_name[i],
+                                doc_path: docs[i]
+                              });
+                            }
+                          }
+                          else {
+                            rows.push({
+                              emp_id: employee.id,
+                              doc_name: req.body.doc_name,
+                              doc_path: docs
                             });
+                          }
+
+                          // console.log(req.body.doc[0]);
+                          db.document.bulkCreate(rows,{fields: ['emp_id', 'doc_name', 'doc_path']})
+                          .then(function(documents) {
+                            return res.status(200)
+                              .json({
+                                status: 'success',
+                                data: {
+                                  id: user.id
+                                },
+                                message: 'Data saved successfully'
+                              });
+                          }).catch(Sequelize.ValidationError, function(err) {
+                            res.status(422)
+                              .json({
+                                status: 'exception',
+                                data: err.errors,
+                                message: 'Validation Failed'
+                              });
+                          }).catch(function(err) {
+                            return next(err);
+                          });
                         }).catch(Sequelize.ValidationError, function(err) {
                           res.status(422)
                             .json({
@@ -266,6 +292,7 @@ function addEmpDetail(req, res, next) {
                         }).catch(function(err) {
                           return next(err);
                         });
+
                       }).catch(Sequelize.ValidationError, function(err) {
                         res.status(422)
                           .json({
@@ -276,9 +303,8 @@ function addEmpDetail(req, res, next) {
                       }).catch(function(err) {
                         return next(err);
                       });
-
                     }).catch(Sequelize.ValidationError, function(err) {
-                      res.status(422)
+                      return res.status(422)
                         .json({
                           status: 'exception',
                           data: err.errors,
@@ -307,35 +333,26 @@ function addEmpDetail(req, res, next) {
                 }).catch(function(err) {
                   return next(err);
                 });
-              }).catch(Sequelize.ValidationError, function(err) {
-                return res.status(422)
-                  .json({
-                    status: 'exception',
-                    data: err.errors,
-                    message: 'Validation Failed'
-                  });
               }).catch(function(err) {
                 return next(err);
               });
+            }).catch(Sequelize.ValidationError, function(err) {
+              return res.status(422)
+                .json({
+                  status: 'exception',
+                  data: err.errors,
+                  message: 'Validation Failed'
+                });
             }).catch(function(err) {
               return next(err);
             });
-          }).catch(Sequelize.ValidationError, function(err) {
-            return res.status(422)
-              .json({
-                status: 'exception',
-                data: err.errors,
-                message: 'Validation Failed'
-              });
           }).catch(function(err) {
             return next(err);
           });
-        }).catch(function(err) {
-          return next(err);
         });
-      });
-    }
-  });
+      }
+    });
+  }
 }
 
 function editEmpDetail(req, res, next) {
