@@ -4,6 +4,7 @@ var port 	= process.env.PORT || 5000;
 
 var hr = require('../controllers/hrAction');
 var auth = require('../controllers/authenticate');
+var ajax = require('../controllers/ajaxRes');
 
 
 router.get('/', function(req, res, next) {
@@ -16,5 +17,7 @@ router.post('/getEmpDetail', hr.getEmpDetail);
 router.post('/listEmp', hr.listEmp);
 router.post('/register', auth.signUp);
 router.post('/login', auth.login);
+router.post('/checkUsername', ajax.checkUsername);
+router.post('/checkEmail', ajax.checkEmail);
 
 module.exports = router;
