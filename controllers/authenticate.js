@@ -176,7 +176,7 @@ function signUp(req, res, next) {
       errorMessage: 'Email is required'
     },
     'username': {notEmpty: true, errorMessage: 'username is required'},
-    'user_role': {notEmpty: true, errorMessage: 'user_role_id is required'},
+    'user_role': {notEmpty: true, errorMessage: 'user_role is required'},
 
     'password': {notEmpty: true, errorMessage: 'Password is required'},
   });
@@ -247,7 +247,6 @@ function login(req, res, next) {
   req.checkBody('loginId', 'LoginId is required').notEmpty();
 
   req.getValidationResult().then(function(result) {
-    console.log(req.body.password);
 
     if (!result.isEmpty()) {
       // return error if there is validation error
@@ -271,14 +270,13 @@ function login(req, res, next) {
         if (user) {
           db.user_role.findOne({
             where: {
-              id: user.user_role_id
+              id: user.user_roleId
             },
             attributes: ['role']
           }).then(function(roleData) {
             var role = roleData.role;
             var userId = user.id;
             var username = user.username;
-
             // compare password
             bcrypt.compare(req.body.password, user.password, function(err, response) {
               if (err) {
@@ -287,14 +285,13 @@ function login(req, res, next) {
                     status: 'exception',
                     message: 'Authentication failed. Wrong password.'
                   });
-                console.log(err);
               } else if (response) {
                     // create authentication token
                     var token = jwt.encode(req.body.loginId, 'hash', 'HS256');
 
                     db.devicetoken.findOne({
                       where: {
-                        user_id: userId
+                        userId: userId
                       }
                     }).then(function(deviceToken) {
 
@@ -304,7 +301,7 @@ function login(req, res, next) {
                           added_at: moment().format('YYYY-MM-DD HH:mm:ss Z'),
                         }, {
                           where: {
-                            user_id: userId
+                            userId: userId
                           },
                           returning: true
                         }).then(function(data) {
@@ -326,9 +323,9 @@ function login(req, res, next) {
                         db.devicetoken.create({
                           token: token,
                           added_at: moment().format('YYYY-MM-DD HH:mm:ss Z'),
-                          user_id: userId
+                          userId: userId
                         }, {
-                          fields: ['token', 'added_at', 'user_id']
+                          fields: ['token', 'added_at', 'userId']
                         }).then(function(data) {
                           return res.status(200)
                             .json({
@@ -346,7 +343,6 @@ function login(req, res, next) {
                         });
                       }
                     }).catch(function(err) {
-                      console.log(err);
                       return next(err);
                     });
                 }
