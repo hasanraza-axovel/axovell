@@ -8,13 +8,13 @@ module.exports = function(sequelize, DataTypes) {
     CTC: DataTypes.STRING,
     HR_no: DataTypes.STRING,
     TL_no: DataTypes.STRING,
-    emp_id: DataTypes.INTEGER
+    employeeId: DataTypes.INTEGER
   },{
-    classMethods: {
-      associate: function(model) {
-        emp_device.belongsTo(model.employee, {foreignKey: 'emp_id', targetKey: 'id', as: 'employee'});
-      }
-    }
+    freezeTableName: true,
+    freezeColumnName: true
   });
+      prev_employer_detaile.associate = function(model) {
+        prev_employer_detaile.belongsTo(model.employee, {foreignKey: 'employeeId', targetKey: 'id', as: 'employee'});
+      }
   return prev_employer_detaile;
 }

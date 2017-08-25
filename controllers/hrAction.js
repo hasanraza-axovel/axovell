@@ -22,12 +22,35 @@ function addEmpDetail(req, res, next) {
   var docs = req.body.doc;
   var doc_names = req.body.doc_name;
   var rows = [];
+  var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
   if((docs.constructor !== Array && doc_names.constructor === Array)||
       (docs.constructor === Array && doc_names.constructor !== Array)) {
         checkDoc = true;
-        console.log("not no. valid");
       }
+  // else if(req.body.doc.constructor === Array && req.body.doc_name.constructor === Array) {
+  //   for(var i=0; i<req.body.doc.length; i++) {
+  //     if(typeof req.body.doc[i] != 'undefined') {
+  //       req.body.doc[i] = req.body.doc[i].substring(req.body.doc[i].indexOf(";base64,") + ";base64,".length+1);
+  //       if(!base64regex.test(req.body.doc[i])) {
+  //         checkDoc = true;
+  //         console.log("not valid");
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
+  // else {
+  //   if(typeof req.body.doc != 'undefined') {
+  //     req.body.doc = req.body.doc.substring(req.body.doc.indexOf(";base64,") + ";base64,".length+1);
+  //     console.log(req.body.doc);
+  //     if(!base64regex.test(req.body.doc)) {
+  //       console.log("not single valid");
+  //       checkDoc = true;
+  //     }
+  //   }
+  // }
+
   if(checkDoc) {
     res.status(422)
       .json({
@@ -103,7 +126,6 @@ else{
         errorMessage: 'service_cont_end is required'
       },
       'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
-      // 'user_id': {notEmpty: true, errorMessage: 'user id is required'},
       'username': {notEmpty: true, errorMessage: 'Username is required'},
       'password': {notEmpty: true, errorMessage: 'Password is required'},
       'emergency_cont_no': {
@@ -180,12 +202,12 @@ else{
             }
           }).then(function(userRole) {
             db.user.create({
-              user_role_id: userRole.id,
+              user_roleId: userRole.id,
               username: req.body.username,
               email: req.body.email,
               password: hash
             },{
-              fields: ['user_role_id', 'username', 'email', 'password']
+              fields: ['user_roleId', 'username', 'email', 'password']
             }).then(function(user) {
               db.employee_role.findOne({
                 where: {
@@ -204,38 +226,38 @@ else{
                   service_cont_end: req.body.service_cont_end,
                   email: req.body.email,
                   password: hash,
-                  emp_role_id: employee_role.id,
-                  user_id: user.id
+                  employee_roleId: employee_role.id,
+                  userId: user.id
                 },{
                   fields: ['emp_fname', 'emp_lname', 'join_date', 'status',
                          'mob_no', 'emergency_cont_no', 'emergency_cont_person',
-                         'service_cont_end', 'email', 'password', 'emp_role_id',
-                         'user_id']
+                         'service_cont_end', 'email', 'password', 'employee_roleId',
+                         'userId']
                 }).then(function(employee) {
                   db.emp_device.create({
-                    emp_id: employee.id,
+                    employeeId: employee.id,
                     laptop_no: req.body.laptop_no,
                     mouse_no: req.body.mouse_no,
                     keyboard_no: req.body.keyboard_no
                   },{
-                    fields: ['emp_id', 'laptop_no', 'mouse_no', 'keyboard_no']
+                    fields: ['employeeId', 'laptop_no', 'mouse_no', 'keyboard_no']
                   }).then(function(empDevice) {
                     db.emp_permnt_addr.create({
-                      emp_id: employee.id,
+                      employeeId: employee.id,
                       address: req.body.per_address,
                       city: req.body.per_city,
                       pincode: req.body.per_pincode
                     },{
-                      fields: ['emp_id', 'address', 'city', 'pincode']
+                      fields: ['employeeId', 'address', 'city', 'pincode']
                     }).then(function(empPermntAddrs) {
                       db.emp_current_addr.create({
-                        emp_id: employee.id,
+                        employeeId: employee.id,
                         address: req.body.cur_address,
                         city: req.body.cur_city,
                         pincode: req.body.cur_pincode
                       }).then(function(empCurrentAddrs) {
                         db.prev_employer_detaile.create({
-                          emp_id: employee.id,
+                          employeeId: employee.id,
                           company_name: req.body.company_name,
                           leaving_date: req.body.leaving_date,
                           CTC: req.body.ctc,
@@ -247,7 +269,7 @@ else{
 
                             for(var i=0; i<docs.length; i++) {
                               rows.push({
-                                emp_id: employee.id,
+                                employeeId: employee.id,
                                 doc_name: req.body.doc_name[i],
                                 doc_path: docs[i]
                               });
@@ -255,14 +277,12 @@ else{
                           }
                           else {
                             rows.push({
-                              emp_id: employee.id,
+                              employeeId: employee.id,
                               doc_name: req.body.doc_name,
                               doc_path: docs
                             });
                           }
-
-                          // console.log(req.body.doc[0]);
-                          db.document.bulkCreate(rows,{fields: ['emp_id', 'doc_name', 'doc_path']})
+                          db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
                           .then(function(documents) {
                             return res.status(200)
                               .json({
@@ -356,149 +376,145 @@ else{
 }
 
 function editEmpDetail(req, res, next) {
-  req.checkBody({
-    'first_name': {
-      notEmpty: true,
-      isLength: {
-        options: [{min: 3, max: 255}],
-        errorMessage: 'First Namee must be between 3 and 255 characters long'
-      },
-      matches: {
-        options: [/^[a-zA-Z\s]*$/i],
-        errorMessage: 'First Name should only contain letters'
-      },
-      errorMessage: 'First Name is required'
-    },
-    'last_name': {
-      notEmpty: true,
-      isLength: {
-        options: [{ min: 3, max: 255 }],
-        errorMessage: 'Last Name must be between 3 and 255 characters long'
-      },
-      matches: {
-        options: [/^[a-zA-Z\s]*$/i],
-        errorMessage: 'Last Name should only contain letters'
-      },
-      errorMessage: 'Last Name is required'
-    },
-    'email': {
-      notEmpty: true,
-      isEmail: {
-        errorMessage: 'Invalid Email'
-      },
-      errorMessage: 'Email is required'
-    },
-    'join_date': {
-      notEmpty: true,
-      isDate: {
-        errorMessage: 'Not a valid date'
-      },
-      errorMessage: 'join Date is required'
-    },
-    'status' : {
-      notEmpty: true,
-      errorMessage: 'status is required',
-      isBoolean: {
-        errorMessage: 'status value must be boolean type'
+  var docs = req.body.doc;
+  var doc_names = req.body.doc_name;
+  var rows = [];
+  var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+  checkDoc = false;
+  if((docs.constructor !== Array && doc_names.constructor === Array)||
+      (docs.constructor === Array && doc_names.constructor !== Array)) {
+        checkDoc = true;
       }
-    },
-    'mob_no': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'Mobile no must contain only digit'
+
+  if(checkDoc) {
+    res.status(422)
+      .json({
+        status: 'exception',
+        message: 'Document is not valid OR no of document is not equal to no of doc name'
+      });
+  }
+
+else{
+    req.checkBody({
+      'first_name': {
+        notEmpty: true,
+        isLength: {
+          options: [{min: 3, max: 255}],
+          errorMessage: 'First Namee must be between 3 and 255 characters long'
+        },
+        matches: {
+          options: [/^[a-zA-Z\s]*$/i],
+          errorMessage: 'First Name should only contain letters'
+        },
+        errorMessage: 'First Name is required'
       },
-      isLength: {
-        options: [{ min: 10, max: 10 }],
-        errorMessage: 'Mobile number must be 10 digit long'
+      'last_name': {
+        notEmpty: true,
+        isLength: {
+          options: [{ min: 3, max: 255 }],
+          errorMessage: 'Last Name must be between 3 and 255 characters long'
+        },
+        matches: {
+          options: [/^[a-zA-Z\s]*$/i],
+          errorMessage: 'Last Name should only contain letters'
+        },
+        errorMessage: 'Last Name is required'
       },
-      errorMessage: 'mobile no is require'
-    },
-    'service_cont_end': {
-      notEmpty: true,
-      isDate: {
-        errorMessage: 'Not a valid date'
+      'email': {
+        notEmpty: true,
+        isEmail: {
+          errorMessage: 'Invalid Email'
+        },
+        errorMessage: 'Email is required'
       },
-      errorMessage: 'service_cont_end is required'
-    },
-    'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
-    // 'user_id': {notEmpty: true, errorMessage: 'user id is required'},
-    'username': {notEmpty: true, errorMessage: 'Username is required'},
-    'password': {notEmpty: true, errorMessage: 'Password is required'},
-    'emergency_cont_no': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'emergency contact number must contain only digit'
+      'join_date': {
+        notEmpty: true,
+        isDate: {
+          errorMessage: 'Not a valid date'
+        },
+        errorMessage: 'join Date is required'
       },
-      errorMessage: 'Emergency contact number is required'
-    },
-    'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
-    'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
-    'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
-    'cur_pincode': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'Pincode must contain only digit'
+      'status' : {
+        notEmpty: true,
+        errorMessage: 'status is required',
+        isBoolean: {
+          errorMessage: 'status value must be boolean type'
+        }
       },
-      isLength: {
-        options: [{ min: 6, max: 6 }],
-        errorMessage: 'Pincode must be 6 digit long'
+      'mob_no': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'Mobile no must contain only digit'
+        },
+        isLength: {
+          options: [{ min: 10, max: 10 }],
+          errorMessage: 'Mobile number must be 10 digit long'
+        },
+        errorMessage: 'mobile no is require'
       },
-      errorMessage: 'Current Pincode is required'
-    },
-    'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
-    'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
-    'per_pincode': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'Pincode must contain only digit'
+      'service_cont_end': {
+        notEmpty: true,
+        isDate: {
+          errorMessage: 'Not a valid date'
+        },
+        errorMessage: 'service_cont_end is required'
       },
-      isLength: {
-        options: [{ min: 6, max: 6 }],
-        errorMessage: 'Pincode must be 6 digit long'
+      'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
+      'username': {notEmpty: true, errorMessage: 'Username is required'},
+      'password': {notEmpty: true, errorMessage: 'Password is required'},
+      'emergency_cont_no': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'emergency contact number must contain only digit'
+        },
+        errorMessage: 'Emergency contact number is required'
       },
-      errorMessage: 'Permanent Code is required'
-    },
-    'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
-    'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
-    'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'},
-    'doc': {
-      notEmpty: true,
-      // isBase64: {
-      //   errorMessage: 'Not a valid document'
-      // },
-      errorMessage: 'Document is required'
-    },
-    'doc_name': {notEmpty: true, errorMessage: 'Document name is required'},
-    'company_name': {notEmpty: true, errorMessage: 'Company name is required'},
-    'leaving_date': {
-      notEmpty: true,
-      isDate: {
-        errorMessage: 'Not a valid date'
+      'emergency_cont_person': {notEmpty: true, errorMessage: 'Emergency contact Person is required'},
+      'cur_address': {notEmpty: true, errorMessage: 'Current Address is required'},
+      'cur_city': {notEmpty: true, errorMessage: 'Current City is required'},
+      'cur_pincode': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'Pincode must contain only digit'
+        },
+        isLength: {
+          options: [{ min: 6, max: 6 }],
+          errorMessage: 'Pincode must be 6 digit long'
+        },
+        errorMessage: 'Current Pincode is required'
       },
-      errorMessage: 'Leaving Date is required'
-    },
-    'ctc': {notEmpty: true, errorMessage: 'CTC is required'},
-    'HR_no': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'HR no must contain only digit'
+      'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
+      'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
+      'per_pincode': {
+        notEmpty: true,
+        matches: {
+          options: [/^[0-9]*$/i],
+          errorMessage: 'Pincode must contain only digit'
+        },
+        isLength: {
+          options: [{ min: 6, max: 6 }],
+          errorMessage: 'Pincode must be 6 digit long'
+        },
+        errorMessage: 'Permanent Code is required'
       },
-      errorMessage: 'HR no. is required'
-    },
-    'TL_no': {
-      notEmpty: true,
-      matches: {
-        options: [/^[0-9]*$/i],
-        errorMessage: 'TL no must contain only digit'
-      },
-      errorMessage: 'TL no is required'
+      'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
+      'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
+      'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
+    });
+
+    if(req.body.leaving_date) {
+      req.checkBody('leaving_date', 'Not a valid date').isDate();
     }
-  });
+    if(req.body.HR_no) {
+      req.checkBody('HR_no', 'HR no must contain only digit').matches(/^[0-9]*$/, "i");
+    }
+    if(req.body.TL_no) {
+      req.checkBody('TL_no', 'TL no must contain only digit').matches(/^[0-9]*$/, "i");
+    }
+
 
   req.getValidationResult().then(function(result) {
 
@@ -517,7 +533,7 @@ function editEmpDetail(req, res, next) {
 
         db.user.findOne({
           where: {
-            id: req.body.user_id
+            id: req.body.userId
           }
         }).then(function(user) {
           if(user) {
@@ -526,11 +542,11 @@ function editEmpDetail(req, res, next) {
               email: req.body.email,
               password: hash
             },{
-              where: {id: req.body.user_id},
+              where: {id: req.body.userId},
             }).then(function(user) {
               db.employee.findOne({
                 where: {
-                  user_id: req.body.user_id
+                  userId: req.body.userId
                 }
               }).then(function(employee) {
                 db.employee_role.findOne({
@@ -549,7 +565,7 @@ function editEmpDetail(req, res, next) {
                     service_cont_end: req.body.service_cont_end,
                     email: req.body.email,
                     password: hash,
-                    emp_role_id: employeeRole.id
+                    employee_roleId: employeeRole.id
                   },{
                     where: {
                       id: employee.id
@@ -561,7 +577,7 @@ function editEmpDetail(req, res, next) {
                       keyboard_no: req.body.keyboard_no
                     }, {
                       where: {
-                        emp_id: employee.id
+                        employeeId: employee.id
                       }
                     }).then(function(empDevice){
                       db.emp_current_addr.update({
@@ -570,7 +586,7 @@ function editEmpDetail(req, res, next) {
                         pincode: req.body.per_pincode
                       },{
                         where: {
-                          emp_id: employee.id
+                          employeeId: employee.id
                         }
                       }).then(function(empCurrentAddrs) {
                         db.emp_permnt_addr.update({
@@ -579,7 +595,7 @@ function editEmpDetail(req, res, next) {
                           pincode: req.body.per_pincode
                         }, {
                           where: {
-                            emp_id: employee.id
+                            employeeId: employee.id
                           }
                         }).then(function(empPermntAddrs) {
                           db.prev_employer_detaile.update({
@@ -590,27 +606,29 @@ function editEmpDetail(req, res, next) {
                             TL_no: req.body.TL_no
                           },{
                             where: {
-                              emp_id: employee.id
+                              employeeId: employee.id
                             }
                           }).then(function(prevEmpDetaile) {
-                            var promises = [];
-                            for(var i=0; i<req.body.doc.length; i++) {
-                              var newPromise = db.document.update({
-                                doc_path: req.body.doc[i]
-                              },{
-                                where: {
-                                  doc_name: req.body.doc_name[i],
-                                  emp_id: employee.id
+
+                              if(docs.constructor === Array) {
+
+                                for(var i=0; i<docs.length; i++) {
+                                  rows.push({
+                                    employeeId: employee.id,
+                                    doc_name: req.body.doc_name[i],
+                                    doc_path: docs[i]
+                                    });
+                                  }
                                 }
-                              });
-                              promises.push(newPromise);
-                            };
-                            return Promise.all(promises).then(function(documents) {
-                              var docPromises = [];
-                              for(var i=0; i<documents.length; i++) {
-                                docPromises.push(documents[i].dataValues);
-                              }
-                            }).then(function(result) {
+                                else {
+                                  rows.push({
+                                    employeeId: employee.id,
+                                    doc_name: req.body.doc_name,
+                                    doc_path: docs
+                                    });
+                                }
+                          db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
+                          .then(function(result) {
                               return res.status(200)
                                 .json({
                                   status: 'success',
@@ -699,7 +717,7 @@ function editEmpDetail(req, res, next) {
       });
     }
   });
-
+}
 }
 
 function getEmpDetail(req, res, next) {
@@ -723,37 +741,37 @@ function getEmpDetail(req, res, next) {
         if(user){
           db.employee.findOne({
             where: {
-              user_id: user.id
+              userId: user.id
             }
           }).then(function(employee) {
             db.employee_role.findOne({
               where: {
-                id: employee.emp_role_id
+                id: employee.employee_roleId
               }
             }).then(function(employeeRole) {
               db.emp_current_addr.findOne({
                 where: {
-                  emp_id: employee.id
+                  employeeId: employee.id
                 }
               }).then(function(empCurrentAddrs) {
                 db.emp_permnt_addr.findOne({
                   where: {
-                    emp_id: employee.id
+                    employeeId: employee.id
                   }
                 }).then(function(empPermntAddrs) {
                   db.prev_employer_detaile.findOne({
                     where: {
-                      emp_id: employee.id
+                      employeeId: employee.id
                     }
                   }).then(function(prevEmpDetaile) {
                     db.emp_device.findOne({
                       where: {
-                        emp_id: employee.id
+                        employeeId: employee.id
                       }
                     }).then(function(empDevice) {
                       db.document.findAll({
                         where: {
-                          emp_id: employee.id
+                          employeeId: employee.id
                         }
                       }).then(function(document) {
                         res.status(200)
@@ -782,7 +800,7 @@ function getEmpDetail(req, res, next) {
                               cur_pincode: empCurrentAddrs.pincode,
                               company_name: prevEmpDetaile.company_name,
                               leaving_date: prevEmpDetaile.leaving_date,
-                              CTC: prevEmpDetaile.ctc,
+                              CTC: prevEmpDetaile.CTC,
                               HR_no: prevEmpDetaile.HR_no,
                               TL_no: prevEmpDetaile.TL_no,
                               doc: document
@@ -826,7 +844,7 @@ function getEmpDetail(req, res, next) {
 }
 
 function listEmp(req, res, next) {
-  req.checkBody('user_id', 'userId is required').notEmpty();
+  req.checkBody('user_id', 'user id is required').notEmpty();
   req.getValidationResult().then(function(result) {
 
     if(!result.isEmpty()) {
@@ -847,17 +865,15 @@ function listEmp(req, res, next) {
         attribures: ['id','role']
       }).then(function(data) {
         var roleIds = [];
-        console.log(data[0].id);
         for(var i=0; i<data.length; i++) {
           roleIds[i] = data[i].id;
         }
-        console.log(roleIds);
         db.user.findOne({
           where: {
             id: req.body.user_id
           }
         }).then(function(user) {
-          if(user && !roleIds.includes(user.user_role_id)) {
+          if(user && !roleIds.includes(user.user_roleId)) {
             return res.status(401)
               .json({
                 status: 'exception',
@@ -866,13 +882,14 @@ function listEmp(req, res, next) {
             }
             else if(user) {
               db.employee.findAll({
-                // include: [
-                //   { model: db.employee_role}
-                // ],
+                include: [
+                  { model: db.employee_role,
+                    as: 'employeeRole'}
+                ],
                 order: [
                   ['createdAt', 'DESC']
               ],
-              attributes: ['id','emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email']
+            attributes: ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId']
             }).then(function(data) {
               return res.status(200)
                 .json({

@@ -3,13 +3,13 @@ module.exports = function(sequelize, DataTypes) {
   var document = sequelize.define('document', {
     doc_name: DataTypes.STRING,
     doc_path: DataTypes.TEXT,
-    emp_id: DataTypes.INTEGER
+    employeeId: DataTypes.INTEGER
   },{
-    classMethods: {
-      associate: function(models){
-        document.belongsTo(models.employee, {foriegnKey: 'emp_id', targetKey: 'id', as: 'employee'});
-      }
-    }
+    freezeTableName: true,
+    freezeColumnName: true
   });
+      document.associate = function(models){
+        document.belongsTo(models.employee, {foriegnKey: 'employeeId', targetKey: 'id', as: 'employee'});
+      }
   return document;
 }

@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
   var user = sequelize.define('user', {
-    user_role_id: DataTypes.INTEGER,
+    user_roleId: DataTypes.INTEGER,
     email: {
       type: DataTypes.STRING,
       unique: true,
@@ -14,7 +14,6 @@ module.exports = function(sequelize, DataTypes) {
     },
 
     password: DataTypes.STRING,
-    // remember_token: DataTypes.STRING
   }, {
     indexes: [
       {
@@ -22,12 +21,13 @@ module.exports = function(sequelize, DataTypes) {
         fields: ['email','username']
       }
     ],
-    classMethods: {
-      associate: function(models) {
-        user.belongsTo(model.user_role,{ foreignKey: 'user_role_id', targetKey: 'id', as: 'userRole'});
-        user.hasMany(model.employee, { foriegnKey:'user_id', as: 'employee'});
-      }
-    }
+    freezeTableName: true,
+    freezeColumnName: true
   });
+      user.associate = function(models) {
+        user.belongsTo(models.user_role,{ foreignKey: 'user_roleId', targetKey: 'id', as: 'userRole'});
+        user.hasOne(models.employee, { foriegnKey:'userId', as: 'employee'});
+        user.hasOne(models.devicetoken, { foriegnKey:'userId', as: 'devicetoken'});
+      }
   return user;
 };

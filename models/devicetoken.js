@@ -1,15 +1,15 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
   var devicetoken = sequelize.define('devicetoken', {
-    user_id: DataTypes.INTEGER,
+    userId: DataTypes.INTEGER,
     token: DataTypes.STRING,
     added_at: DataTypes.DATE
   },{
-    classMethods: {
-      associate: function(models) {
-
-      }
-    }
+    freezeTableName: true,
+    freezeColumnName: true
   });
+      devicetoken.associate = function(models) {
+        devicetoken.belongsTo(models.user, {foriegnKey: 'userId', targetKey: 'id', as: 'user'});
+      }
   return devicetoken;
 };

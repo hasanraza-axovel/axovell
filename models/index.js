@@ -14,7 +14,6 @@ if(config.use_env_variable) {
 else {
   var sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
-
 fs
   .readdirSync(__dirname)
   .filter(function(file) {
@@ -24,7 +23,6 @@ fs
   .forEach(function(file) {
     var model = sequelize['import'](path.join(__dirname, file));
     db[model.name] = model;
-
   });
 
   Object.keys(db).forEach(function(modelName) {
@@ -32,7 +30,8 @@ fs
       db[modelName].associate(db);
     }
   });
-
   db.sequelize = sequelize;
   db.Sequelize = Sequelize;
+
+  sequelize.sync();
   module.exports = db;

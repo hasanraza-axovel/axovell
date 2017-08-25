@@ -6,13 +6,14 @@ module.exports = function(sequelize, DataTypes) {
     address: DataTypes.STRING,
     city: DataTypes.STRING,
     pincode: DataTypes.STRING,
-    emp_id: DataTypes.INTEGER
+    employeeId: DataTypes.INTEGER
   },{
-    classMethods: {
-      associate: function(model) {
-        emp_device.belongsTo(model.employee, {foreignKey: 'emp_id', targetKey: 'id', as: 'employee'});
-      }
-    }
+    freezeTableName: true,
+    freezeColumnName: true
   });
+      emp_current_addr.associate = function(model) {
+        emp_current_addr.belongsTo(model.employee, {foreignKey: 'employeeId', targetKey: 'id', as: 'employee'});
+      }
+
   return emp_current_addr;
 }

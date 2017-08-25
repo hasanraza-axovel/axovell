@@ -15,26 +15,27 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     password: DataTypes.STRING,
-    emp_role_id: DataTypes.INTEGER,
-    user_id: DataTypes.INTEGER
+    employee_roleId: DataTypes.INTEGER,
+    userId: DataTypes.INTEGER
   }, {
     indexes: [
       {
         unique: true,
-        fields: ['email', 'username']
+        fields: ['email']
       }
     ],
-    classMethods: {
-      associte: function(models) {
-        employee.belongsTo(models.user, { foriegnKey: 'user_id', targetKey: 'id', as: 'user'});
-        employee.belongsTo(models.employee_role, { foreignKey: 'employee_role_id', targetKey: 'id', as: 'employeeRole'});
-        employee.hasOne(models.emp_device, {foreignKey: 'emp_id', as: 'empDevice'});
-        employee.hasOne(models.emp_current_addr, {foreignKey: 'emp_id', as: 'empCurrentAddrs'});
-        employee.hasOne(models.emp_permnt_addr, {foreignKey: 'emp_id', as: 'empPermntAddrs'});
-        employee.hasOne(models.prev_employer_detaile, {foreignKey: 'emp_id', as: 'prevEmpDetaile'});
-        employee.hasMany(models.Document, {foreignKey: 'emp_id', as: 'Document'});
-      }
-    }
+    freezeTableName: true,
+    freezeColumnName: true
+
   });
+      employee.associate = function(models) {
+        employee.belongsTo(models.user, { foriegnKey: 'userId', targetKey: 'id', as:'user'});
+        employee.belongsTo(models.employee_role, { foreignKey: 'employee_roleId', targetKey: 'id', as: 'employeeRole'});
+        employee.hasOne(models.emp_device, {foreignKey: 'employeeId', as: 'empDevice'});
+        employee.hasOne(models.emp_current_addr, {foreignKey: 'employeeId', as: 'empCurrentAddrs'});
+        employee.hasOne(models.emp_permnt_addr, {foreignKey: 'employeeId', as: 'empPermntAddrs'});
+        employee.hasOne(models.prev_employer_detaile, {foreignKey: 'employeeId', as: 'prevEmpDetaile'});
+        employee.hasMany(models.document, {foreignKey: 'employeeId', as: 'document'});
+      };
   return employee;
 };
