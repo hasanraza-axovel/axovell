@@ -22,7 +22,7 @@ function addEmpDetail(req, res, next) {
   var rows = [];
   // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
-  if(typeof req.body.doc != 'undefined') {
+  if(typeof req.body.doc != undefined) {
     if((req.body.doc.constructor !== Array && req.body.doc_name.constructor === Array)||
         (req.body.doc.constructor === Array && req.body.doc_name.constructor !== Array)) {
           checkDoc = true;
@@ -244,15 +244,16 @@ else{
                         }).then(function(prevEmpDetaile) {
 
 
+                          if(req.body.doc !== undefined) {
+                            if(req.body.doc.constructor === Array) {
 
-                          if(req.body.doc.constructor === Array) {
-
-                            for(var i=0; i<req.body.doc.length; i++) {
-                              rows.push({
-                                employeeId: employee.id,
-                                doc_name: req.body.doc_name[i],
-                                doc_path: req.body.doc[i]
-                              });
+                              for(var i=0; i<req.body.doc.length; i++) {
+                                rows.push({
+                                  employeeId: employee.id,
+                                  doc_name: req.body.doc_name[i],
+                                  doc_path: req.body.doc[i]
+                                });
+                              }
                             }
                           }
                           else {
@@ -359,7 +360,7 @@ function editEmpDetail(req, res, next) {
   var rows = [];
   // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
-  if(req.body.doc !== 'undefined') {
+  if(req.body.doc !== undefined) {
     if((req.body.doc.constructor !== Array && req.body.doc_name.constructor === Array)||
         (req.body.doc.constructor === Array && req.body.doc_name.constructor !== Array)) {
           checkDoc = true;
@@ -589,7 +590,7 @@ else{
                               employeeId: employee.id
                             }
                           }).then(function(prevEmpDetaile) {
-
+                            if(req.body.doc !== undefined) {
                               if(req.body.doc.constructor === Array) {
 
                                 for(var i=0; i<req.body.doc.length; i++) {
@@ -600,6 +601,7 @@ else{
                                     });
                                   }
                                 }
+                              }
                                 else {
                                   rows.push({
                                     employeeId: employee.id,
