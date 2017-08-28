@@ -22,7 +22,7 @@ function addEmpDetail(req, res, next) {
   var rows = [];
   // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
-  if(typeof req.body.doc != undefined) {
+  if(req.body.doc !== undefined && req.body.doc_name !== undefined) {
     if((req.body.doc.constructor !== Array && req.body.doc_name.constructor === Array)||
         (req.body.doc.constructor === Array && req.body.doc_name.constructor !== Array)) {
           checkDoc = true;
@@ -255,7 +255,7 @@ else{
                                 });
                               }
                             }
-                          }
+
                           else {
                             rows.push({
                               employeeId: employee.id,
@@ -263,6 +263,7 @@ else{
                               doc_path: req.body.doc
                             });
                           }
+                        }
                           db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
                           .then(function(documents) {
                             return res.status(200)
@@ -360,7 +361,7 @@ function editEmpDetail(req, res, next) {
   var rows = [];
   // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
-  if(req.body.doc !== undefined) {
+  if(req.body.doc !== undefined && req.body.doc_name !== undefined) {
     if((req.body.doc.constructor !== Array && req.body.doc_name.constructor === Array)||
         (req.body.doc.constructor === Array && req.body.doc_name.constructor !== Array)) {
           checkDoc = true;
@@ -590,7 +591,7 @@ else{
                               employeeId: employee.id
                             }
                           }).then(function(prevEmpDetaile) {
-                            if(req.body.doc !== undefined) {
+                            if(req.body.doc !== undefined && req.body.doc_name !== undefined) {
                               if(req.body.doc.constructor === Array) {
 
                                 for(var i=0; i<req.body.doc.length; i++) {
@@ -601,7 +602,7 @@ else{
                                     });
                                   }
                                 }
-                              }
+
                                 else {
                                   rows.push({
                                     employeeId: employee.id,
@@ -609,6 +610,7 @@ else{
                                     doc_path: req.body.doc
                                     });
                                 }
+                              }
                           db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
                           .then(function(result) {
                               return res.status(200)
