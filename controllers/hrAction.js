@@ -6,7 +6,6 @@ var bcrypt = require('bcrypt-nodejs');
 var db = require('../models');
 
 var async = require('async');
-// var connection = require('../config/dbconnection');
 
 
 module.exports = {
@@ -14,42 +13,21 @@ module.exports = {
   editEmpDetail: editEmpDetail,
   getEmpDetail: getEmpDetail,
 
-  listEmp: listEmp
+  listEmp: listEmp,
+  deleteEmp: deleteEmp
 }
 
 
 function addEmpDetail(req, res, next) {
-  var docs = req.body.doc;
-  var doc_names = req.body.doc_name;
   var rows = [];
-  var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+  // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
-  if((docs.constructor !== Array && doc_names.constructor === Array)||
-      (docs.constructor === Array && doc_names.constructor !== Array)) {
-        checkDoc = true;
+  if(typeof req.body.doc != 'undefined') {
+    if((req.body.doc.constructor !== Array && req.body.doc_name.constructor === Array)||
+        (req.body.doc.constructor === Array && req.body.doc_name.constructor !== Array)) {
+          checkDoc = true;
+        }
       }
-  // else if(req.body.doc.constructor === Array && req.body.doc_name.constructor === Array) {
-  //   for(var i=0; i<req.body.doc.length; i++) {
-  //     if(typeof req.body.doc[i] != 'undefined') {
-  //       req.body.doc[i] = req.body.doc[i].substring(req.body.doc[i].indexOf(";base64,") + ";base64,".length+1);
-  //       if(!base64regex.test(req.body.doc[i])) {
-  //         checkDoc = true;
-  //         console.log("not valid");
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }
-  // else {
-  //   if(typeof req.body.doc != 'undefined') {
-  //     req.body.doc = req.body.doc.substring(req.body.doc.indexOf(";base64,") + ";base64,".length+1);
-  //     console.log(req.body.doc);
-  //     if(!base64regex.test(req.body.doc)) {
-  //       console.log("not single valid");
-  //       checkDoc = true;
-  //     }
-  //   }
-  // }
 
   if(checkDoc) {
     res.status(422)
@@ -265,13 +243,15 @@ else{
                           TL_no: req.body.TL_no
                         }).then(function(prevEmpDetaile) {
 
-                          if(docs.constructor === Array) {
 
-                            for(var i=0; i<docs.length; i++) {
+
+                          if(req.body.doc.constructor === Array) {
+
+                            for(var i=0; i<req.body.doc.length; i++) {
                               rows.push({
                                 employeeId: employee.id,
                                 doc_name: req.body.doc_name[i],
-                                doc_path: docs[i]
+                                doc_path: req.body.doc[i]
                               });
                             }
                           }
@@ -279,7 +259,7 @@ else{
                             rows.push({
                               employeeId: employee.id,
                               doc_name: req.body.doc_name,
-                              doc_path: docs
+                              doc_path: req.body.doc
                             });
                           }
                           db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
@@ -376,14 +356,14 @@ else{
 }
 
 function editEmpDetail(req, res, next) {
-  var docs = req.body.doc;
-  var doc_names = req.body.doc_name;
   var rows = [];
-  var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+  // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
-  if((docs.constructor !== Array && doc_names.constructor === Array)||
-      (docs.constructor === Array && doc_names.constructor !== Array)) {
-        checkDoc = true;
+  if(req.body.doc !== 'undefined') {
+    if((req.body.doc.constructor !== Array && req.body.doc_name.constructor === Array)||
+        (req.body.doc.constructor === Array && req.body.doc_name.constructor !== Array)) {
+          checkDoc = true;
+        }
       }
 
   if(checkDoc) {
@@ -504,7 +484,7 @@ else{
       'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
       'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
     });
-
+    req.checkBody('emp_user_id', "employee's user Id is required").notEmpty();
     if(req.body.leaving_date) {
       req.checkBody('leaving_date', 'Not a valid date').isDate();
     }
@@ -533,7 +513,7 @@ else{
 
         db.user.findOne({
           where: {
-            id: req.body.userId
+            id: req.body.emp_user_id
           }
         }).then(function(user) {
           if(user) {
@@ -542,11 +522,11 @@ else{
               email: req.body.email,
               password: hash
             },{
-              where: {id: req.body.userId},
+              where: {id: req.body.emp_user_id},
             }).then(function(user) {
               db.employee.findOne({
                 where: {
-                  userId: req.body.userId
+                  userId: req.body.emp_user_id
                 }
               }).then(function(employee) {
                 db.employee_role.findOne({
@@ -581,9 +561,9 @@ else{
                       }
                     }).then(function(empDevice){
                       db.emp_current_addr.update({
-                        address: req.body.per_address,
-                        city: req.body.per_city,
-                        pincode: req.body.per_pincode
+                        address: req.body.cur_address,
+                        city: req.body.cur_city,
+                        pincode: req.body.cur_pincode
                       },{
                         where: {
                           employeeId: employee.id
@@ -610,13 +590,13 @@ else{
                             }
                           }).then(function(prevEmpDetaile) {
 
-                              if(docs.constructor === Array) {
+                              if(req.body.doc.constructor === Array) {
 
-                                for(var i=0; i<docs.length; i++) {
+                                for(var i=0; i<req.body.doc.length; i++) {
                                   rows.push({
                                     employeeId: employee.id,
                                     doc_name: req.body.doc_name[i],
-                                    doc_path: docs[i]
+                                    doc_path: req.body.doc[i]
                                     });
                                   }
                                 }
@@ -624,7 +604,7 @@ else{
                                   rows.push({
                                     employeeId: employee.id,
                                     doc_name: req.body.doc_name,
-                                    doc_path: docs
+                                    doc_path: req.body.doc
                                     });
                                 }
                           db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
@@ -788,6 +768,7 @@ function getEmpDetail(req, res, next) {
                               service_cont_end: employee.service_cont_end,
                               email: employee.email,
                               username: user.username,
+                              userId: user.id,
                               employee_role: employeeRole.role,
                               laptop_no: empDevice.laptop_no,
                               mouse_no: empDevice.mouse_no,
@@ -911,6 +892,33 @@ function listEmp(req, res, next) {
         }).catch(function(err) {
           return next(err);
         });
+      }).catch(function(err) {
+        return next(err);
+      });
+    }
+  });
+}
+
+function deleteEmp(req, res, next) {
+  req.checkBody('emp_user_id', 'employee userId is required').notEmpty();
+  req.getValidationResult().then(function(result) {
+    if(!result.isEmpty()) {
+      res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    }
+    else {
+      db.user.findOne({
+        where: {
+          id: req.body.emp_user_id
+        }
+      }).then(function(user) {
+        if(user) {
+
+        }
       }).catch(function(err) {
         return next(err);
       });
