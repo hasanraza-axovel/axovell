@@ -6,7 +6,8 @@ module.exports = function(sequelize, DataTypes) {
     address: DataTypes.STRING,
     city: DataTypes.STRING,
     pincode: DataTypes.STRING,
-    employeeId: DataTypes.INTEGER
+    employeeId: DataTypes.INTEGER,
+    country: DataTypes.STRING
   },{
     freezeTableName: true,
     freezeColumnName: true

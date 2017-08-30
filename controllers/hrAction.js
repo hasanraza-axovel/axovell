@@ -140,6 +140,7 @@ else{
         },
         errorMessage: 'Current Pincode is required'
       },
+      'cur_country': {notEmpty: true, errorMessage: 'Current country is required'},
       'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
       'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
       'per_pincode': {
@@ -154,6 +155,7 @@ else{
         },
         errorMessage: 'Permanent Code is required'
       },
+      'per_country': {notEmpty: true, errorMessage: 'Permanent country is required'},
       'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
       'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
       'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
@@ -236,15 +238,19 @@ else{
                       employeeId: employee.id,
                       address: req.body.per_address,
                       city: req.body.per_city,
-                      pincode: req.body.per_pincode
+                      pincode: req.body.per_pincode,
+                      country: req.body.per_country
                     },{
-                      fields: ['employeeId', 'address', 'city', 'pincode']
+                      fields: ['employeeId', 'address', 'city', 'pincode', 'country']
                     }).then(function(empPermntAddrs) {
                       db.emp_current_addr.create({
                         employeeId: employee.id,
                         address: req.body.cur_address,
                         city: req.body.cur_city,
-                        pincode: req.body.cur_pincode
+                        pincode: req.body.cur_pincode,
+                        country: req.body.cur_country
+                      },{
+                        fields: ['employeeId', 'address', 'city', 'pincode', 'country']
                       }).then(function(empCurrentAddrs) {
                         db.prev_employer_detaile.create({
                           employeeId: employee.id,
@@ -491,6 +497,7 @@ else{
         },
         errorMessage: 'Current Pincode is required'
       },
+      'cur_country': {notEmpty: true, errorMessage: 'Current country is required'},
       'per_city': {notEmpty: true, errorMessage: 'Permanent City is required'},
       'per_address': {notEmpty: true, errorMessage: 'Permanent Address is required'},
       'per_pincode': {
@@ -505,6 +512,7 @@ else{
         },
         errorMessage: 'Permanent Code is required'
       },
+      'per_country': {notEmpty: true, errorMessage: 'Permanent country is required'},
       'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
       'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
       'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
@@ -589,7 +597,8 @@ else{
                       db.emp_current_addr.update({
                         address: req.body.cur_address,
                         city: req.body.cur_city,
-                        pincode: req.body.cur_pincode
+                        pincode: req.body.cur_pincode,
+                        country: req.body.cur_country
                       },{
                         where: {
                           employeeId: employee.id
@@ -598,7 +607,8 @@ else{
                         db.emp_permnt_addr.update({
                           address: req.body.per_address,
                           city: req.body.per_city,
-                          pincode: req.body.per_pincode
+                          pincode: req.body.per_pincode,
+                          country: req.body.per_country
                         }, {
                           where: {
                             employeeId: employee.id
@@ -804,9 +814,11 @@ function getEmpDetail(req, res, next) {
                               per_address: empPermntAddrs.address,
                               per_city: empPermntAddrs.city,
                               per_pincode: empPermntAddrs.pincode,
+                              per_country: empPermntAddrs.country,
                               cur_address: empCurrentAddrs.address,
                               cur_city: empCurrentAddrs.city,
                               cur_pincode: empCurrentAddrs.pincode,
+                              cur_country: empCurrentAddrs.country,
                               company_name: prevEmpDetaile.company_name,
                               leaving_date: prevEmpDetaile.leaving_date,
                               CTC: prevEmpDetaile.CTC,
