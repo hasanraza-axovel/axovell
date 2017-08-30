@@ -14,6 +14,7 @@ module.exports = function(sequelize, DataTypes) {
     },
 
     password: DataTypes.STRING,
+    profile_pic: DataTypes.TEXT
   }, {
     indexes: [
       {
@@ -26,8 +27,8 @@ module.exports = function(sequelize, DataTypes) {
   });
       user.associate = function(models) {
         user.belongsTo(models.user_role,{ foreignKey: 'user_roleId', targetKey: 'id', as: 'userRole'});
-        user.hasOne(models.employee, { foriegnKey:'userId', as: 'employee'});
-        user.hasOne(models.devicetoken, { foriegnKey:'userId', as: 'devicetoken'});
+        user.hasOne(models.employee, { foriegnKey:'userId', as: 'employee', onDelete: 'cascade'});
+        user.hasOne(models.devicetoken, { foriegnKey:'userId', as: 'devicetoken', onDelete: 'cascade'});
       }
   return user;
 };

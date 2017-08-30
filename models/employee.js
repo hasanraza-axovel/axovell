@@ -31,11 +31,11 @@ module.exports = function(sequelize, DataTypes) {
       employee.associate = function(models) {
         employee.belongsTo(models.user, { foriegnKey: 'userId', targetKey: 'id', as:'user'});
         employee.belongsTo(models.employee_role, { foreignKey: 'employee_roleId', targetKey: 'id', as: 'employeeRole'});
-        employee.hasOne(models.emp_device, {foreignKey: 'employeeId', as: 'empDevice'});
-        employee.hasOne(models.emp_current_addr, {foreignKey: 'employeeId', as: 'empCurrentAddrs'});
-        employee.hasOne(models.emp_permnt_addr, {foreignKey: 'employeeId', as: 'empPermntAddrs'});
-        employee.hasOne(models.prev_employer_detaile, {foreignKey: 'employeeId', as: 'prevEmpDetaile'});
-        employee.hasMany(models.document, {foreignKey: 'employeeId', as: 'document'});
+        employee.hasOne(models.emp_device, {foreignKey: 'employeeId', as: 'empDevice', onDelete: 'cascade'});
+        employee.hasOne(models.emp_current_addr, {foreignKey: 'employeeId', as: 'empCurrentAddrs', onDelete: 'cascade'});
+        employee.hasOne(models.emp_permnt_addr, {foreignKey: 'employeeId', as: 'empPermntAddrs', onDelete: 'cascade'});
+        employee.hasOne(models.prev_employer_detaile, {foreignKey: 'employeeId', as: 'prevEmpDetaile', onDelete: 'cascade'});
+        employee.hasMany(models.document, {foreignKey: 'employeeId', as: 'document', onDelete: 'cascade'});
       };
   return employee;
 };

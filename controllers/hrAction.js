@@ -19,6 +19,10 @@ module.exports = {
 
 
 function addEmpDetail(req, res, next) {
+  if(req.body.profile_pic !== undefined) {
+    var profile_pic = req.body.profile_pic;
+    req.body.profile_pic = req.body.profile_pic.substring(req.body.profile_pic.indexOf(";base64,")+";base64".length+1);
+  }
   var rows = [];
   // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
@@ -106,6 +110,13 @@ else{
       'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
       'username': {notEmpty: true, errorMessage: 'Username is required'},
       'password': {notEmpty: true, errorMessage: 'Password is required'},
+      'profile_pic': {
+        notEmpty: true,
+        isBase64: {
+          errorMessage: 'Profile pic is not valid'
+        },
+        errorMessage: 'Profile pic is required'
+      },
       'emergency_cont_no': {
         notEmpty: true,
         matches: {
@@ -183,9 +194,10 @@ else{
               user_roleId: userRole.id,
               username: req.body.username,
               email: req.body.email,
-              password: hash
+              password: hash,
+              profile_pic: profile_pic
             },{
-              fields: ['user_roleId', 'username', 'email', 'password']
+              fields: ['user_roleId', 'username', 'email', 'password', 'profile_pic']
             }).then(function(user) {
               db.employee_role.findOne({
                 where: {
@@ -358,6 +370,10 @@ else{
 }
 
 function editEmpDetail(req, res, next) {
+  if(req.body.profile_pic !== undefined) {
+    var profile_pic = req.body.profile_pic;
+    req.body.profile_pic = req.body.profile_pic.substring(req.body.profile_pic.indexOf(";base64,")+";base64".length+1);
+  }
   var rows = [];
   // var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
   checkDoc = false;
@@ -445,6 +461,13 @@ else{
       'emp_role': {notEmpty: true, errorMessage: 'employee role id is required'},
       'username': {notEmpty: true, errorMessage: 'Username is required'},
       'password': {notEmpty: true, errorMessage: 'Password is required'},
+      'profile_pic': {
+        notEmpty: true,
+        isBase64: {
+          errorMessage: 'Profile pic is not valid'
+        },
+        errorMessage: 'Profile pic is required'
+      },
       'emergency_cont_no': {
         notEmpty: true,
         matches: {
@@ -522,7 +545,8 @@ else{
             db.user.update({
               username: req.body.username,
               email: req.body.email,
-              password: hash
+              password: hash,
+              profile_pic: profile_pic
             },{
               where: {id: req.body.emp_user_id},
             }).then(function(user) {
@@ -788,6 +812,7 @@ function getEmpDetail(req, res, next) {
                               CTC: prevEmpDetaile.CTC,
                               HR_no: prevEmpDetaile.HR_no,
                               TL_no: prevEmpDetaile.TL_no,
+                              profile_pic: user.profile_pic,
                               doc: document
                             },
                             message: "Employee's data found"
