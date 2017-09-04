@@ -292,7 +292,8 @@ function login(req, res, next) {
                     db.devicetoken.findOne({
                       where: {
                         userId: userId
-                      }
+                      },
+                      attributes: ['id', 'userId', 'token']
                     }).then(function(deviceToken) {
 
                       if (deviceToken) {
