@@ -4,6 +4,8 @@ var Sequelize = require('sequelize');
 var moment = require('moment');
 var bcrypt = require('bcrypt-nodejs');
 var db = require('../models');
+var json2csv = require('json2csv');
+var fs = require('fs');
 
 var async = require('async');
 
@@ -14,7 +16,8 @@ module.exports = {
   getEmpDetail: getEmpDetail,
 
   listEmp: listEmp,
-  deleteEmp: deleteEmp
+  deleteEmp: deleteEmp,
+  createCsv: createCsv
 }
 
 
@@ -917,6 +920,87 @@ function listEmp(req, res, next) {
                 .json({
                   status: 'success',
                   data: data,
+                  message: data.length + ' employees found'
+                });
+            }).catch(function(err) {
+              return next(err);
+            });
+            }
+            else {
+              return res.status(401)
+                .json({
+                  status: 'exception',
+                  message: 'Unauthorized Access'
+                });
+            }
+        }).catch(function(err) {
+          return next(err);
+        });
+      }).catch(function(err) {
+        return next(err);
+      });
+    }
+  });
+}
+
+function createCsv(req, res, next) {
+  req.checkBody('user_id', 'user id is required').notEmpty();
+  req.getValidationResult().then(function(result) {
+
+    if(!result.isEmpty()) {
+      return res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    }
+    else {
+      db.user_role.findAll({
+        where: {
+          role: {
+            $in: ['hr', 'admin']
+          }
+        },
+        attribures: ['id','role']
+      }).then(function(data) {
+        var roleIds = [];
+        for(var i=0; i<data.length; i++) {
+          roleIds[i] = data[i].id;
+        }
+        db.user.findOne({
+          where: {
+            id: req.body.user_id
+          }
+        }).then(function(user) {
+          if(user && !roleIds.includes(user.user_roleId)) {
+            return res.status(401)
+              .json({
+                status: 'exception',
+                message:  'Unauthorized Access!'
+              });
+            }
+            else if(user) {
+              db.employee.findAll({
+                include: [
+                  { model: db.employee_role,
+                    as: 'employeeRole'}
+                ],
+                order: [
+                  ['createdAt', 'DESC']
+              ],
+            attributes: ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId']
+            }).then(function(data) {
+              var fields = ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId']
+              var csv = json2csv({data: data, fields: fields});
+              fs.writeFile('./public/files/file.csv', csv, function(err) {
+                if(err) throw err;
+                console.log('file saved');
+              });
+              return res.status(200)
+                .json({
+                  status: 'success',
+                  data: 'http://192.241.153.62:5000/files/file.csv',
                   message: data.length + ' employees found'
                 });
             }).catch(function(err) {

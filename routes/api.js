@@ -16,6 +16,7 @@ router.post('/editEmpDetail', hr.editEmpDetail);
 router.post('/getEmpDetail', hr.getEmpDetail);
 router.post('/listEmp', hr.listEmp);
 router.post('/deleteEmp', hr.deleteEmp);
+router.post('/createCsv', hr.createCsv);
 router.post('/register', auth.signUp);
 router.post('/login', auth.login);
 router.post('/checkUsername', ajax.checkUsername);
