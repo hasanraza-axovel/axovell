@@ -1001,7 +1001,7 @@ function createCsv(req, res, next) {
                 .json({
                   status: 'success',
                   data: 'http://192.241.153.62:5000/files/file.csv',
-                  message: data.length + ' employees found'
+                  message: 'Csv file created'
                 });
             }).catch(function(err) {
               return next(err);
