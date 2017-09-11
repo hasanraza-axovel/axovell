@@ -6,6 +6,7 @@ var bcrypt = require('bcrypt-nodejs');
 var db = require('../models');
 var json2csv = require('json2csv');
 var fs = require('fs');
+var PDFKit = require('pdfkitjs');
 
 var async = require('async');
 
@@ -17,7 +18,8 @@ module.exports = {
 
   listEmp: listEmp,
   deleteEmp: deleteEmp,
-  createCsv: createCsv
+  createCsv: createCsv,
+  createPdf: createPdf
 }
 
 
@@ -164,13 +166,13 @@ else{
       'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
     });
 
-    if(req.body.leaving_date) {
+    if(typeof req.body.leaving_date !== 'undefined') {
       req.checkBody('leaving_date', 'Not a valid date').isDate();
     }
-    if(req.body.HR_no) {
+    if(typeof req.body.HR_no !== 'undefined') {
       req.checkBody('HR_no', 'HR no must contain only digit').matches(/^[0-9]*$/, "i");
     }
-    if(req.body.TL_no) {
+    if(typeof req.body.TL_no !== 'undefined') {
       req.checkBody('TL_no', 'TL no must contain only digit').matches(/^[0-9]*$/, "i");
     }
 
@@ -1162,3 +1164,21 @@ function deleteEmp(req, res, next) {
     }
   });
 }
+
+// function createPdf(req, res, next) {
+//
+//   console.log('pdf creating');
+//
+// pdf = new PDFKit('html', '<h1>Hello</h1>');
+//
+// console.log('gooogle');
+//
+// pdf.toFile('google.pdf', function (err, file) {
+//   console.log('File ' + file + ' written');
+//   res.status(200)
+//   .json({
+//     message: 'ok'
+//   });
+// });
+//
+// }
