@@ -6,7 +6,6 @@ var bcrypt = require('bcrypt-nodejs');
 var db = require('../models');
 var json2csv = require('json2csv');
 var fs = require('fs');
-var PDFKit = require('pdfkitjs');
 
 var async = require('async');
 
