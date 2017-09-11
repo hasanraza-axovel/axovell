@@ -18,7 +18,6 @@ module.exports = {
   listEmp: listEmp,
   deleteEmp: deleteEmp,
   createCsv: createCsv,
-  createPdf: createPdf
 }
 
 
