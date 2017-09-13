@@ -2,6 +2,7 @@
 module.exports = function(sequelize, DataTypes) {
   var user = sequelize.define('user', {
     user_roleId: DataTypes.INTEGER,
+    remember_token: DataTypes.STRING,
     email: {
       type: DataTypes.STRING,
       unique: true,

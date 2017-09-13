@@ -6,165 +6,27 @@ var moment = require('moment');
 
 var bcrypt = require('bcrypt-nodejs');
 
+const nodemailer = require('nodemailer');
 var jwt = require('jwt-simple');
-
 var db = require('../models');
+var ejs = require('ejs');
 // var connection = require('../config/dbconnection');
+
+var transport = nodemailer.createTransport({
+  host: "smtp.mailtrap.io",
+  port: 2525,
+  auth: {
+    user: "2b06e5f1a29881",
+    pass: "f44c5f4ad55c4c"
+  }
+});
 
 module.exports = {
   signUp: signUp,
-  login: login
+  login: login,
+  forgotPassword: forgotPassword,
+  resetPassword: resetPassword
 }
-
-// function signUp(req, res, next) {
-//
-//   // console.log(req.body);
-// req.checkBody({
-//     'email': {
-//       notEmpty: true,
-//       isEmail: {
-//         errorMessage: 'Invalid Email'
-//       },
-//       errorMessage:'Email is required'
-//     },
-//     'username': {notEmpty: true, errorMessage: 'username is required'},
-//     'password': {notEmpty: true, errorMessage: 'password is required'},
-//     'user_role': {notEmpty: true, errorMessage: 'user_role_id is required'},
-//   });
-//
-//   req.getValidationResult().then(function(result) {
-//     if(!result.isEmpty()) {
-//       return res.status(422)
-//         .json({
-//           status: 'exception',
-//           data: result.array(),
-//           message: 'Validation Failed'
-//         });
-//     }
-//     else {
-//       bcrypt.hash(req.body.password, null, null, function(err, hash) {
-//         if(err) return next(err);
-//
-//         var qry = "SELECT id FROM user_role WHERE role=?";
-//         var role = req.body.user_role;
-//         var user_role_id;
-//         connection.query(qry, role, function(err, result) {
-//           if(err){
-//             return res.status(404)
-//               .json({
-//                 status: "exception",
-//                 message: "database select error"
-//               });
-//           }
-//           else {
-//             user_role_id = result[0].id;
-//
-//           }
-//           var data = [
-//             [req.body.email,
-//             req.body.username,
-//             hash,
-//             user_role_id]
-//           ];
-//           console.log(data);
-//           var insQry = "INSERT INTO user(email, username, password, user_role_id) VALUES ?";
-//           connection.query(insQry, [data], function(error, resl) {
-//             if(error) {
-//               return res.status(404)
-//                 .json({
-//                   status: "exception",
-//                   message: "database error"
-//                 });
-//             }
-//             else {
-//               console.log(resl);
-//               return res.status(200)
-//                 .json({
-//                   status: 'success',
-//                   data: {
-//                     username: data[0][1]
-//                   },
-//                   message: 'You have successfully registered'
-//                 });
-//             }
-//           });
-//         });
-//       });
-//     }
-//   });
-// }
-//
-//
-// function login(req, res, next) {
-//   // console.log(req.body.loginId);
-//   // req.chechBody('password','password is required').notEmpty();
-//   // req.checkBody('loginId', 'loginId is required').notEmpty();
-//   //
-//   // req.getValidationResult().then(function(result) {
-//   //
-//   //   if(!result.isEmpty()) {
-//   //
-//   //     return res.status(422)
-//   //       .json({
-//   //         status: 'exception',
-//   //         data: result.array(),
-//   //         message: 'Validation Failed'
-//   //       });
-//   //   }
-//   //   else {
-//       var qry1 = "SELECT * FROM user WHERE email = ? OR usermame = ?";
-//       connection.query(qry1, [req.body.loginId, req.body.loginId], function(err, user) {
-//         if(err) {
-//           return res.status(404)
-//             .json({
-//               status: "exception",
-//               message: "database select user error"
-//             });
-//         }
-//         else {
-//           var user_role_id = user[0].user_role_id;
-//           var qry2 = "SELECT role FROM user_role WHERE id = ?";
-//           connection.query(qry2, user_role_id, function(err, role) {
-//             if(err) {
-//               return res.status(404)
-//                 .json({
-//                   status: "exception",
-//                   message: "database select role error"
-//               });
-//             }
-//           });
-//           var Role = role[0];
-//           var username = user[0].username;
-//           var email = user[0].email;
-//           var userId = user[0].userId;
-//
-//           bcrypt.compare(req.body.password, user[0].password, function(err, response) {
-//             if(err) {
-//               return res.status(401)
-//                 .json({
-//                   status: 'exception',
-//                   message: 'Authentication failed. Wrong Password.',
-//                 });
-//             }
-//             else {
-//               return res.status(200)
-//                 .json({
-//                   status: 'success',
-//                   data: {
-//                     id: userId,
-//                     role: Role,
-//                     username: username,
-//                     email: email
-//                   },
-//                   message: 'Login successfully'
-//                 });
-//             }
-//           });
-//         }
-//       });
-//     // }
-//   // });
-// }
 
 function signUp(req, res, next) {
   req.checkBody({
@@ -363,6 +225,167 @@ function login(req, res, next) {
             .json({
               status: 'exception',
               message: 'Authentication failed. User not found.'
+            });
+        }
+      }).catch(function(err) {
+        return next(err);
+      });
+    }
+  });
+}
+
+function forgotPassword(req, res, next) {
+  req.checkBody({
+    'email': {
+      notEmpty: true,
+      isEmail: {
+        errorMessage: 'Invalid Email'
+      },
+      errorMessage: 'Email is required'
+    }
+  });
+
+  req.getValidationResult().then(function(result) {
+
+    if (!result.isEmpty()) {
+      // return error if there is validation error
+      return res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    } else {
+      var resetCode = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+      db.user.findOne({
+        where: {
+          email: req.body.email
+        }
+      }).then(function(user) {
+        if (user) {
+          db.user.update({
+            remember_token: resetCode
+          }, {
+            where: {
+              email: req.body.email
+            },
+            returning: true
+          }).then(function(status) {
+            if (status) {
+              ejs.renderFile(__dirname + '/../views/forgot-password-mail.ejs', {email: req.body.email, resetCode: resetCode}, function(err, str) {
+                // setup email data with unicode symbols
+                let mailOptions = {
+                  from: '"Axovel" <axovel@axovel.com>', // sender address
+                  to: req.body.email, // list of receivers
+                  subject: 'Reset Password: Axovel', // Subject line
+                  html: str
+                };
+
+                // send mail with defined transport object
+                transport.sendMail(mailOptions, (error, info) => {
+                  if (error) {
+                    return console.log(error);
+                  }
+                });
+              });
+              return res.status(200)
+                .json({
+                  status: 'success',
+                  message: 'We have sent you an email with reset password link. Kindly check.'
+                });
+            } else {
+              return next(err);
+            }
+          }).catch(function(err) {
+            return next(err);
+          });
+        } else {
+          return res.status(404)
+            .json({
+              status: 'exception',
+              message: 'User not found'
+            });
+        }
+      }).catch(function(err) {
+        return next(err);
+      });
+    }
+  });
+}
+
+function resetPassword(req, res, next) {
+  // validate input
+  req.checkBody({
+    'email': {
+      notEmpty: true,
+      isEmail: {
+        errorMessage: 'Invalid Email'
+      },
+      errorMessage: 'Email is required'
+    },
+    'password': {notEmpty: true, errorMessage: 'Password is required'},
+    'reset_code': {notEmpty: true, errorMessage: 'Reset Code is required'}
+  });
+
+  req.getValidationResult().then(function(result) {
+
+    if (!result.isEmpty()) {
+      // return error if there is validation error
+      return res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    } else {
+      db.user.findOne({
+        where: {
+          email: req.body.email
+        }
+      }).then(function(user) {
+        if (user) {
+          if (user.remember_token != req.body.reset_code) {
+            return res.status (422)
+              .json({
+                status: 'exception',
+                message: 'Wrong reset code'
+              });
+          } else {
+            bcrypt.hash(req.body.password, null, null, function(err, hash) {
+              // if error occurs
+              if (err) return next(err);
+
+              db.user.update({
+                password: hash,
+                remember_token: null
+              }, {
+                where: {
+                  id: user.id
+                }
+              }).then(function(status) {
+                if (status) {
+                  return res.status(200)
+                    .json({
+                      status: 'success',
+                      message: 'Password Changed successfully'
+                    });
+                } else {
+                  return res.status(422)
+                    .json({
+                      status: 'exception',
+                      message: 'Server Error'
+                    });
+                }
+              }).catch(function(err) {
+                return next(err);
+              });
+            });
+          }
+        } else {
+          return res.status(404)
+            .json({
+              status: 'exception',
+              message: 'User not found'
             });
         }
       }).catch(function(err) {

@@ -17,8 +17,11 @@ router.post('/getEmpDetail', hr.getEmpDetail);
 router.post('/listEmp', hr.listEmp);
 router.post('/deleteEmp', hr.deleteEmp);
 router.post('/createCsv', hr.createCsv);
+// router.post('/createPdf', hr.createPdf);
 router.post('/register', auth.signUp);
 router.post('/login', auth.login);
+router.post('/forgotPassword', auth.forgotPassword);
+router.post('/resetPassword', auth.resetPassword);
 router.post('/checkUsername', ajax.checkUsername);
 router.post('/checkEmail', ajax.checkEmail);
 

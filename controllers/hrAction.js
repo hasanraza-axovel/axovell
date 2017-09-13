@@ -984,25 +984,49 @@ function createCsv(req, res, next) {
               db.employee.findAll({
                 include: [
                   { model: db.employee_role,
-                    as: 'employeeRole'}
+                    as: 'employeeRole'},
+                    {
+                      model: db.emp_device,
+                      as: 'empDevice'
+                    },
+                    {
+                      model: db.emp_current_addr,
+                      as: 'empCurrentAddrs'
+                    },
+                    {
+                      model: db.emp_permnt_addr,
+                      as: 'empPermntAddrs'
+                    },
+                    {
+                      model: db.prev_employer_detaile,
+                      as: 'prevEmpDetaile'
+                    }
                 ],
                 order: [
                   ['createdAt', 'DESC']
               ],
-            attributes: ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId']
+            attributes: ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
+            'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId'
+              ]
             }).then(function(data) {
-              var fields = ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no', 'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId']
+              var fields = ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
+              'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId',
+              'employeeRole.role', 'empDevice.laptop_no', 'empDevice.mouse_no', 'empDevice.keyboard_no',
+              'empCurrentAddrs.address', 'empCurrentAddrs.city', 'empCurrentAddrs.pincode', 'empCurrentAddrs.country',
+              'empPermntAddrs.address', 'empPermntAddrs.city', 'empPermntAddrs.pincode', 'empPermntAddrs.country',
+              'prevEmpDetaile.company_name', 'prevEmpDetaile.leaving_date', 'prevEmpDetaile.CTC', 'prevEmpDetaile.HR_no',
+            'prevEmpDetaile.TL_no'];
               var csv = json2csv({data: data, fields: fields});
               fs.writeFile('./public/files/file.csv', csv, function(err) {
                 if(err) throw err;
                 console.log('file saved');
+                return res.status(200)
+                  .json({
+                    status: 'success',
+                    data: 'http://192.241.153.62:1223/files/file.csv',
+                    message: 'Csv file created'
+                  });
               });
-              return res.status(200)
-                .json({
-                  status: 'success',
-                  data: 'http://192.241.153.62:1223/files/file.csv',
-                  message: 'Csv file created'
-                });
             }).catch(function(err) {
               return next(err);
             });
