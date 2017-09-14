@@ -25,7 +25,8 @@ module.exports = {
   signUp: signUp,
   login: login,
   forgotPassword: forgotPassword,
-  resetPassword: resetPassword
+  resetPassword: resetPassword,
+  // changePassword: changePassword
 }
 
 function signUp(req, res, next) {
@@ -175,6 +176,8 @@ function login(req, res, next) {
                                 id: userId,
                                 role: role,
                                 username: username,
+                                profile_pic: user.profile_pic,
+                                email: user.email,
                                 token: token
                               },
                               message: 'User successfully login'
@@ -197,6 +200,8 @@ function login(req, res, next) {
                                 id: userId,
                                 role: role,
                                 username: username,
+                                profile_pic: user.profile_pic,
+                                email: user.email,
                                 token: token
                               },
                               message: 'User successfully login'
@@ -394,3 +399,36 @@ function resetPassword(req, res, next) {
     }
   });
 }
+
+// function changePassword(req, res, next) {
+//   req.checkBody({
+//     'email': {
+//       notEmpty: true,
+//       isEmail: {
+//         errorMessage: 'Invalid Email'
+//       },
+//       errorMessage: 'Email is required'
+//     }
+//     'old_password': {
+//       notEmpty: true,
+//       errorMessage: 'Old password is required'
+//     },
+//     'new_password': {
+//       notEmpty: true,
+//       errorMessage: 'New password is required'
+//     }
+//   });
+//
+//   req.getValidationResult().then(function(result) {
+//
+//     if(!result.isEmpty()) {
+//       res.status(422)
+//         .json({
+//           status: 'exception',
+//           data: result.array(),
+//           message: 'Validation failed'
+//         })
+//     }
+//
+//   });
+// }
