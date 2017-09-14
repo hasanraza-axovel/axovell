@@ -26,7 +26,7 @@ module.exports = {
   login: login,
   forgotPassword: forgotPassword,
   resetPassword: resetPassword,
-  // changePassword: changePassword
+  changePassword: changePassword
 }
 
 function signUp(req, res, next) {
@@ -400,35 +400,81 @@ function resetPassword(req, res, next) {
   });
 }
 
-// function changePassword(req, res, next) {
-//   req.checkBody({
-//     'email': {
-//       notEmpty: true,
-//       isEmail: {
-//         errorMessage: 'Invalid Email'
-//       },
-//       errorMessage: 'Email is required'
-//     }
-//     'old_password': {
-//       notEmpty: true,
-//       errorMessage: 'Old password is required'
-//     },
-//     'new_password': {
-//       notEmpty: true,
-//       errorMessage: 'New password is required'
-//     }
-//   });
-//
-//   req.getValidationResult().then(function(result) {
-//
-//     if(!result.isEmpty()) {
-//       res.status(422)
-//         .json({
-//           status: 'exception',
-//           data: result.array(),
-//           message: 'Validation failed'
-//         })
-//     }
-//
-//   });
-// }
+function changePassword(req, res, next) {
+  req.checkBody({
+    'email': {
+      notEmpty: true,
+      isEmail: {
+        errorMessage: 'Invalid Email'
+      },
+      errorMessage: 'Email is required'
+    },
+    'old_password': {
+      notEmpty: true,
+      errorMessage: 'Old password is required'
+    },
+    'new_password': {
+      notEmpty: true,
+      errorMessage: 'New password is required'
+    }
+  });
+
+  req.getValidationResult().then(function(result) {
+
+    if(!result.isEmpty()) {
+      res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation failed'
+        })
+    }
+    else {
+      db.user.findOne({
+        where: {
+          email: req.body.email
+        }
+      }).then(function(user) {
+        bcrypt.compare(req.body.old_password, user.password, function(err, response) {
+          if(err) {
+            res.status(401)
+              .json({
+                status: 'exception',
+                message: 'Old password is wrong'
+              });
+          }
+          else if(response) {
+            bcrypt.hash(req.body.new_password, null, null, function(err, hash) {
+              if(err) next(err);
+              db.user.update({
+                password: hash
+              },{
+                where: {
+                  id: user.id
+                }
+              }).then(function(result) {
+                res.status(200)
+                  .json({
+                    status: 'success',
+                    message: 'Password changed successfully'
+                  })
+              }).catch(function(err) {
+                return next(err);
+              });
+            });
+          }
+          else {
+            res.status(401)
+              .json({
+                status: 'exception',
+                message: 'Old password is wrong'
+              });
+          }
+        });
+      }).catch(function(err) {
+        return next(err);
+      });
+    }
+
+  });
+}

@@ -22,6 +22,7 @@ router.post('/register', auth.signUp);
 router.post('/login', auth.login);
 router.post('/forgotPassword', auth.forgotPassword);
 router.post('/resetPassword', auth.resetPassword);
+router.post('/changePassword', auth.changePassword);
 router.post('/checkUsername', ajax.checkUsername);
 router.post('/checkEmail', ajax.checkEmail);
 
