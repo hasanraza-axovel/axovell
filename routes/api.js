@@ -17,6 +17,7 @@ router.post('/getEmpDetail', hr.getEmpDetail);
 router.post('/listEmp', hr.listEmp);
 router.post('/deleteEmp', hr.deleteEmp);
 router.post('/createCsv', hr.createCsv);
+router.post('/addDevice', hr.addDevice);
 // router.post('/createPdf', hr.createPdf);
 router.post('/register', auth.signUp);
 router.post('/login', auth.login);

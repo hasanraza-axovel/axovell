@@ -18,6 +18,7 @@ module.exports = {
   listEmp: listEmp,
   deleteEmp: deleteEmp,
   createCsv: createCsv,
+  addDevice:addDevice
 }
 
 
@@ -942,7 +943,6 @@ function listEmp(req, res, next) {
     }
   });
 }
-
 function createCsv(req, res, next) {
   req.checkBody('user_id', 'user id is required').notEmpty();
   req.getValidationResult().then(function(result) {
@@ -1185,6 +1185,63 @@ function deleteEmp(req, res, next) {
 
     }
   });
+}
+
+function addDevice(req, res, next){
+    req.checkBody({
+      'device_no': {notEmpty: true, errorMessage: 'device No. is required'},
+      'device_name':{notEmpty: true, errorMessage: 'device Name. is required'},
+      'device_code':{notEmpty: true, errorMessage: 'device Code. is required'},
+      'device_company':{notEmpty: true, errorMessage: 'device Code. is required'},
+      'charger':{notEmpty: true, errorMessage: 'charger is required'},
+      'bag':{notEmpty: true, errorMessage: 'charger is required'},
+      'mouse':{notEmpty: true, errorMessage: 'mouse is required'},
+      'keyboard':{notEmpty: true, errorMessage: 'keyboard is required'},
+      'assign_status':{notEmpty: true, errorMessage: 'assign_status is required'},
+    });
+    req.getValidationResult().then(function(result) {
+      if(!result.isEmpty()) {
+        res.status(422)
+          .json({
+            status: 'exception',
+            data: result.array(),
+            message: 'Validation Failed'
+          });
+      }
+      else{
+        db.device.create({
+          device_no: req.body.device_no,
+          device_name: req.body.device_name,
+          device_code: req.body.device_code,
+          device_company: req.body.device_company,
+          charger: req.body.charger,
+          mouse:req.body.mouse,
+          bag:req.body.bag,
+          keyboard:req.body.keyboard,
+          assign_status:req.body.assign_status,
+        },{
+          fields: ['device_no', 'device_name', 'device_code','device_company','bag','mouse', 'charger','keyboard','assign_status']
+        }).then(function(device) {
+          return res.status(200)
+          .json({
+          status: 'success',
+          data: {
+          // id: user.id
+          },
+          message: 'Data saved successfully'
+          });
+          }).catch(Sequelize.ValidationError, function(err) {
+            return res.status(422)
+              .json({
+                status: 'exception',
+                data: err.errors,
+                message: 'Validation Failed'
+              });
+          }).catch(function(err) {
+            return next(err);
+          });
+      }
+    });
 }
 
 // function createPdf(req, res, next) {
