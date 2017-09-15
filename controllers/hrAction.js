@@ -18,6 +18,7 @@ module.exports = {
   listEmp: listEmp,
   deleteEmp: deleteEmp,
   createCsv: createCsv,
+  bluckDeleteEmp:bluckDeleteEmp,
   addDevice:addDevice
 }
 
@@ -1088,7 +1089,10 @@ function deleteEmp(req, res, next) {
             db.employee.findOne({
               where: {
                 userId: req.body.emp_user_id
-              }
+              },
+              attributes: ['id','emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
+              'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId'
+                ]
             }).then(function(employee) {
               if(employee) {
                 db.document.destroy({
@@ -1102,10 +1106,6 @@ function deleteEmp(req, res, next) {
                     }
                   }).then(function(result) {
                     db.emp_device.destroy({
-                      where: {
-                        employeeId: employee.id
-                      }
-                    }).then(function(result) {
                       where: {
                         employeeId: employee.id
                       }
@@ -1243,7 +1243,147 @@ function addDevice(req, res, next){
       }
     });
 }
+function bluckDeleteEmp(req, res, next) {
+  req.checkBody('emp_user_id', 'employee userId is required').notEmpty();
+  req.checkBody('user_id', 'employee userId is required').notEmpty();
+  req.getValidationResult().then(function(result) {
+    if(!result.isEmpty()) {
+      res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    }
+    else {
+      db.user_role.findAll({
+        where: {
+          role: {
+            $in: ['hr', 'admin']
+          }
+        }
+      }).then(function(data) {
+        var roleIds = [];
+        for(var i=0; i<data.length; i++) {
+          roleIds[i] = data[i].id;
+        }
+        db.user.findOne({
+          where: {
+            id: req.body.user_id
+          }
+        }).then(function(user) {
+          if(user && !roleIds.includes(user.user_roleId)) {
+            return res.status(401)
+              .json({
+                status: 'exception',
+                message:  'Unauthorized Access!'
+              });
+            }
+          else if(user) {
+            db.employee.findOne({
+              where: {
+                userId: req.body.emp_user_id
+              },
+              attributes: ['id','emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
+              'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId'
+                ]
+            }).then(function(employee) {
+              if(employee) {
+                db.document.destroy({
+                  where: {
+                    employeeId: employee.id
+                  }
+                }).then(function(result) {
+                  db.emp_current_addr.destroy({
+                    where: {
+                      employeeId: employee.id
+                    }
+                  }).then(function(result) {
+                    db.emp_device.destroy({
+                      where: {
+                        employeeId: employee.id
+                      }
+                    }).then(function(result) {
+                      where: {
+                        employeeId: employee.id
+                      }
+                    }).then(function(result) {
+                      db.emp_permnt_addr.destroy({
+                        where: {
+                          employeeId: employee.id
+                        }
+                      }).then(function(result) {
+                        db.prev_employer_detaile.destroy({
+                          where: {
+                            employeeId: employee.id
+                          }
+                        }).then(function(result) {
+                          db.employee.destroy({
+                            where: {
+                              id: employee.id
+                            }
+                          }).then(function(result) {
+                            db.user.destroy({
+                              where: {
+                                id: req.body.emp_user_id
+                              }
+                            }).then(function(result) {
+                              res.status(200)
+                                .json({
+                                  status: 'success',
+                                  message: 'Employee deleted succesfully'
+                                });
+                            }).catch(function(err) {
+                              return next(err);
+                            });
+                          }).catch(function(err) {
+                            return next(err);
+                          })
+                        }).catch(function(err) {
+                          return next(err);
+                        });
+                      }).catch(function(err) {
+                        return next(err);
+                      });
+                    }).catch(function(err) {
+                      return next(err);
+                    });
+                  }).catch(function(err) {
+                    return next(err);
+                  });
+                }).catch(function(err) {
+                  return next(err);
+                });
+              }
+              else {
+                res.status(422)
+                  .json({
+                    status: 'exception',
+                    message: 'Employee does not found'
+                  });
 
+              }
+            }).catch(function(err) {
+              return next(err);
+            });
+          }
+          else {
+            res.status(422)
+              .json({
+                status: 'exception',
+                message: 'User does not found'
+              });
+          }
+        }).catch(function(err) {
+          return next(err);
+        });
+      }).catch(function(err) {
+        return next(err);
+      });
+
+    }
+  });
+}
 // function createPdf(req, res, next) {
 //
 //   console.log('pdf creating');
