@@ -1275,9 +1275,7 @@ function bluckDeleteEmp(req, res, next) {
           else if(user) {
             db.employee.findAll({
               where: {
-                userId: {
-                $in: req.body.emp_user_id
-              }
+                userId: req.body.emp_user_id
               },
               attributes: ['id','emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
               'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId'
