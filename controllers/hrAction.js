@@ -161,9 +161,8 @@ else{
         errorMessage: 'Permanent Code is required'
       },
       'per_country': {notEmpty: true, errorMessage: 'Permanent country is required'},
-      'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
-      'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
-      'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
+      'deviceId': {notEmpty: true, errorMessage: 'Device Id is required'},
+      'device_no': {notEmpty: true, errorMessage: 'Ddevice no is required'}
     });
 
     if(typeof req.body.leaving_date !== 'undefined') {
@@ -233,9 +232,8 @@ else{
                 }).then(function(employee) {
                   db.emp_device.create({
                     employeeId: employee.id,
-                    laptop_no: req.body.laptop_no,
-                    mouse_no: req.body.mouse_no,
-                    keyboard_no: req.body.keyboard_no
+                    deviceId: req.body.deviceId,
+                    device_no: req.body.device_no
                   },{
                     fields: ['employeeId', 'laptop_no', 'mouse_no', 'keyboard_no']
                   }).then(function(empDevice) {
@@ -517,10 +515,8 @@ else{
         },
         errorMessage: 'Permanent Code is required'
       },
-      'per_country': {notEmpty: true, errorMessage: 'Permanent country is required'},
-      'laptop_no': {notEmpty: true, errorMessage: 'Laptop No. is required'},
-      'mouse_no': {notEmpty: true, errorMessage: 'Mouse No. is required'},
-      'keyboard_no': {notEmpty: true, errorMessage: 'Keyboard No is required'}
+      'deviceId': {notEmpty: true, errorMessage: 'Device Id is required'},
+      'device_no': {notEmpty: true, errorMessage: 'Device No is required'}
     });
     req.checkBody('emp_user_id', "employee's user Id is required").notEmpty();
     if(req.body.leaving_date) {
@@ -591,9 +587,8 @@ else{
                     }
                   }).then(function(data) {
                     db.emp_device.update({
-                      laptop_no: req.body.laptop_no,
-                      mouse_no: req.body.mouse_no,
-                      keyboard_no: req.body.keyboard_no
+                      deviceId: req.body.deviceId,
+                      device_no: req.body.device_no
                     }, {
                       where: {
                         employeeId: employee.id
@@ -813,9 +808,7 @@ function getEmpDetail(req, res, next) {
                               username: user.username,
                               userId: user.id,
                               employee_role: employeeRole.role,
-                              laptop_no: empDevice.laptop_no,
-                              mouse_no: empDevice.mouse_no,
-                              keyboard_no: empDevice.keyboard_no,
+                              device_no: empDevice.device_no,
                               per_address: empPermntAddrs.address,
                               per_city: empPermntAddrs.city,
                               per_pincode: empPermntAddrs.pincode,
@@ -1012,7 +1005,7 @@ function createCsv(req, res, next) {
             }).then(function(data) {
               var fields = ['emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
               'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId',
-              'employeeRole.role', 'empDevice.laptop_no', 'empDevice.mouse_no', 'empDevice.keyboard_no',
+              'employeeRole.role', 'empDevice.device_no',
               'empCurrentAddrs.address', 'empCurrentAddrs.city', 'empCurrentAddrs.pincode', 'empCurrentAddrs.country',
               'empPermntAddrs.address', 'empPermntAddrs.city', 'empPermntAddrs.pincode', 'empPermntAddrs.country',
               'prevEmpDetaile.company_name', 'prevEmpDetaile.leaving_date', 'prevEmpDetaile.CTC', 'prevEmpDetaile.HR_no',

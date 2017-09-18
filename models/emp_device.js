@@ -2,7 +2,8 @@
 module.exports = function(sequelize, DataTypes) {
   var emp_device = sequelize.define('emp_device', {
     deviceId : DataTypes.INTEGER,
-    employeeId: DataTypes.INTEGER
+    employeeId: DataTypes.INTEGER,
+    device_no: DataTypes.INTEGER
   },{
     freezeTableName: true,
     freezeColumnName: true
