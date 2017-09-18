@@ -1242,7 +1242,7 @@ function addDevice(req, res, next){
           });
       }
     });
-}
+}41
 function bluckDeleteEmp(req, res, next) {
   req.checkBody('emp_user_id', 'employee userId is required').notEmpty();
   req.checkBody('user_id', 'employee userId is required').notEmpty();
@@ -1280,7 +1280,7 @@ function bluckDeleteEmp(req, res, next) {
               });
             }
           else if(user) {
-            db.employee.findOne({
+            db.employee.findAll({
               where: {
                 userId: req.body.emp_user_id
               },
@@ -1366,7 +1366,8 @@ function bluckDeleteEmp(req, res, next) {
             }).catch(function(err) {
               return next(err);
             });
-          }
+
+        }
           else {
             res.status(422)
               .json({
@@ -1397,7 +1398,7 @@ function bluckDeleteEmp(req, res, next) {
 //   res.status(200)
 //   .json({
 //     message: 'ok'
-//   });
+//   });41
 // });
 //
 // }
