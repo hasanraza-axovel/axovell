@@ -19,7 +19,8 @@ module.exports = {
   deleteEmp: deleteEmp,
   createCsv: createCsv,
   bluckDeleteEmp:bluckDeleteEmp,
-  addDevice:addDevice
+  addDevice:addDevice,
+  getAllDevices:getAllDevices
 }
 
 
@@ -37,7 +38,6 @@ function addEmpDetail(req, res, next) {
           checkDoc = true;
         }
       }
-
   if(checkDoc) {
     res.status(422)
       .json({
@@ -963,7 +963,7 @@ function createCsv(req, res, next) {
             $in: ['hr', 'admin']
           }
         },
-        attribures: ['id','role']
+        attributes: ['id','role']
       }).then(function(data) {
         var roleIds = [];
         for(var i=0; i<data.length; i++) {
@@ -1282,45 +1282,51 @@ function bluckDeleteEmp(req, res, next) {
           else if(user) {
             db.employee.findAll({
               where: {
-                userId: req.body.emp_user_id
+                userId: {
+                $in: req.body.emp_user_id
+              }
               },
               attributes: ['id','emp_fname','emp_lname', 'join_date', 'status', 'mob_no',
               'emergency_cont_person', 'emergency_cont_no', 'service_cont_end', 'email','userId'
                 ]
             }).then(function(employee) {
+              var id = [];
+              for(var i=0; i<employee.length; i++) {
+                id[i] = employee[i].id;
+              }
               if(employee) {
                 db.document.destroy({
                   where: {
-                    employeeId: employee.id
+                    employeeId: id
                   }
                 }).then(function(result) {
                   db.emp_current_addr.destroy({
                     where: {
-                      employeeId: employee.id
+                      employeeId: id
                     }
                   }).then(function(result) {
                     db.emp_device.destroy({
                       where: {
-                        employeeId: employee.id
+                        employeeId: id
                       }
                     }).then(function(result) {
                       where: {
-                        employeeId: employee.id
+                        employeeId: id
                       }
                     }).then(function(result) {
                       db.emp_permnt_addr.destroy({
                         where: {
-                          employeeId: employee.id
+                          employeeId: id
                         }
                       }).then(function(result) {
                         db.prev_employer_detaile.destroy({
                           where: {
-                            employeeId: employee.id
+                            employeeId: id
                           }
                         }).then(function(result) {
                           db.employee.destroy({
                             where: {
-                              id: employee.id
+                              id: id
                             }
                           }).then(function(result) {
                             db.user.destroy({
@@ -1384,6 +1390,80 @@ function bluckDeleteEmp(req, res, next) {
 
     }
   });
+}
+function getAllDevices(req,res,next){
+  req.checkBody('user_id', 'user id is required').notEmpty();
+  req.getValidationResult().then(function(result) {
+
+    if(!result.isEmpty()) {
+      return res.status(422)
+        .json({
+          status: 'exception',
+          data: result.array(),
+          message: 'Validation Failed'
+        });
+    }
+    else {
+      db.user_role.findAll({
+        where: {
+          role: {
+            $in: ['hr', 'admin']
+          }
+        },
+        attributes: ['id','role']
+      }).then(function(data) {
+        var roleIds = [];
+        for(var i=0; i<data.length; i++) {
+          roleIds[i] = data[i].id;
+        }
+        db.user.findOne({
+          where: {
+            id: req.body.user_id
+          }
+        }).then(function(user) {
+          if(user && !roleIds.includes(user.user_roleId)) {
+            return res.status(401)
+              .json({
+                status: 'exception',
+                message:  'Unauthorized Access!'
+              });
+            }
+            else if(user) {
+              db.device.findAll({
+                where:{
+                  assign_status: false
+                },
+                order: [
+                  ['createdAt', 'DESC']
+              ],
+            attributes: ['id','device_no','device_name', 'device_code', 'charger', 'mouse', 'keyboard', 'device_company', 'bag','assign_status']
+            }).then(function(data) {
+              return res.status(200)
+                .json({
+                  status: 'success',
+                  data: data,
+                  message: data.length + ' devices found'
+                });
+            }).catch(function(err) {
+              return next(err);
+            });
+            }
+            else {
+              return res.status(401)
+                .json({
+                  status: 'exception',
+                  message: 'Unauthorized Access'
+                });
+            }
+        }).catch(function(err) {
+          return next(err);
+        });
+      }).catch(function(err) {
+        return next(err);
+      });
+    }
+  });
+
 }
 // function createPdf(req, res, next) {
 //
