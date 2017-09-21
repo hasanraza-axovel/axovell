@@ -235,66 +235,83 @@ else{
                     deviceId: req.body.deviceId,
                     device_no: req.body.device_no
                   },{
-                    fields: ['employeeId', 'laptop_no', 'mouse_no', 'keyboard_no']
+                    fields: ['employeeId', 'deviceId', 'device_no']
                   }).then(function(empDevice) {
-                    db.emp_permnt_addr.create({
-                      employeeId: employee.id,
-                      address: req.body.per_address,
-                      city: req.body.per_city,
-                      pincode: req.body.per_pincode,
-                      country: req.body.per_country
+                    db.device.update({
+                      assign_status: true
                     },{
-                      fields: ['employeeId', 'address', 'city', 'pincode', 'country']
-                    }).then(function(empPermntAddrs) {
-                      db.emp_current_addr.create({
+                      where: {
+                        id: req.body.deviceId
+                      }
+                    }).then(function(kkk) {
+                      db.emp_permnt_addr.create({
                         employeeId: employee.id,
-                        address: req.body.cur_address,
-                        city: req.body.cur_city,
-                        pincode: req.body.cur_pincode,
-                        country: req.body.cur_country
+                        address: req.body.per_address,
+                        city: req.body.per_city,
+                        pincode: req.body.per_pincode,
+                        country: req.body.per_country
                       },{
                         fields: ['employeeId', 'address', 'city', 'pincode', 'country']
-                      }).then(function(empCurrentAddrs) {
-                        db.prev_employer_detaile.create({
+                      }).then(function(empPermntAddrs) {
+                        db.emp_current_addr.create({
                           employeeId: employee.id,
-                          company_name: req.body.company_name,
-                          leaving_date: req.body.leaving_date,
-                          CTC: req.body.ctc,
-                          HR_no: req.body.HR_no,
-                          TL_no: req.body.TL_no
-                        }).then(function(prevEmpDetaile) {
+                          address: req.body.cur_address,
+                          city: req.body.cur_city,
+                          pincode: req.body.cur_pincode,
+                          country: req.body.cur_country
+                        },{
+                          fields: ['employeeId', 'address', 'city', 'pincode', 'country']
+                        }).then(function(empCurrentAddrs) {
+                          db.prev_employer_detaile.create({
+                            employeeId: employee.id,
+                            company_name: req.body.company_name,
+                            leaving_date: req.body.leaving_date,
+                            CTC: req.body.ctc,
+                            HR_no: req.body.HR_no,
+                            TL_no: req.body.TL_no
+                          }).then(function(prevEmpDetaile) {
 
 
-                          if(req.body.doc !== undefined) {
-                            if(req.body.doc.constructor === Array) {
+                            if(req.body.doc !== undefined) {
+                              if(req.body.doc.constructor === Array) {
 
-                              for(var i=0; i<req.body.doc.length; i++) {
-                                rows.push({
-                                  employeeId: employee.id,
-                                  doc_name: req.body.doc_name[i],
-                                  doc_path: req.body.doc[i]
-                                });
+                                for(var i=0; i<req.body.doc.length; i++) {
+                                  rows.push({
+                                    employeeId: employee.id,
+                                    doc_name: req.body.doc_name[i],
+                                    doc_path: req.body.doc[i]
+                                  });
+                                }
                               }
-                            }
 
-                          else {
-                            rows.push({
-                              employeeId: employee.id,
-                              doc_name: req.body.doc_name,
-                              doc_path: req.body.doc
-                            });
-                          }
-                        }
-                          db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
-                          .then(function(documents) {
-                            return res.status(200)
-                              .json({
-                                status: 'success',
-                                data: {
-                                  id: user.id
-                                },
-                                message: 'Data saved successfully'
+                            else {
+                              rows.push({
+                                employeeId: employee.id,
+                                doc_name: req.body.doc_name,
+                                doc_path: req.body.doc
                               });
+                            }
+                          }
+                            db.document.bulkCreate(rows,{fields: ['employeeId', 'doc_name', 'doc_path']})
+                            .then(function(documents) {
+                              return res.status(200)
+                                .json({
+                                  status: 'success',
+                                  data: {
+                                    id: user.id
+                                  },
+                                  message: 'Data saved successfully'
+                                });
+                            }).catch(Sequelize.ValidationError, function(err) {
+                              res.status(422)
+                                .json({
+                                  status: 'exception',
+                                  data: err.errors,
+                                  message: 'Validation Failed'
+                                });
+                            }).catch(function(err) {
+                              return next(err);
+                            });
                           }).catch(Sequelize.ValidationError, function(err) {
                             res.status(422)
                               .json({
@@ -305,6 +322,7 @@ else{
                           }).catch(function(err) {
                             return next(err);
                           });
+
                         }).catch(Sequelize.ValidationError, function(err) {
                           res.status(422)
                             .json({
@@ -315,17 +333,9 @@ else{
                         }).catch(function(err) {
                           return next(err);
                         });
-
-                      }).catch(Sequelize.ValidationError, function(err) {
-                        res.status(422)
-                          .json({
-                            status: 'exception',
-                            data: err.errors,
-                            message: 'Validation Failed'
-                          });
-                      }).catch(function(err) {
-                        return next(err);
-                      });
+                    }).catch(function(err) {
+                      return next(err);
+                    });
                     }).catch(Sequelize.ValidationError, function(err) {
                       return res.status(422)
                         .json({
